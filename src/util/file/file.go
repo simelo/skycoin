@@ -169,7 +169,7 @@ func SaveBinary(filename string, data []byte, mode os.FileMode) error {
 func ResolveResourceDirectory(path string) string {
 	workDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
-		logger.Panic(err)
+		logger.Error(err)
 	}
 
 	_, rtFilename, _, _ := runtime.Caller(1)
@@ -177,7 +177,7 @@ func ResolveResourceDirectory(path string) string {
 
 	pathAbs, err := filepath.Abs(path)
 	if err != nil {
-		logger.Panic(err)
+		logger.Error(err)
 	}
 	fmt.Println("abs path:", pathAbs)
 
@@ -220,7 +220,7 @@ func ResolveResourceDirectory(path string) string {
 			return dir
 		}
 	}
-	logger.Panic("GUI directory not found")
+	logger.Error("GUI directory not found")
 	return ""
 }
 

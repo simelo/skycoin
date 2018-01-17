@@ -89,12 +89,12 @@ func (cfg *Config) preprocess() Config {
 		if config.Daemon.Address == "" {
 			local, err := LocalhostIP()
 			if err != nil {
-				logger.Panicf("Failed to obtain localhost IP: %v", err)
+				logger.Errorf("Failed to obtain localhost IP: %v", err)
 			}
 			config.Daemon.Address = local
 		} else {
 			if !IsLocalhost(config.Daemon.Address) {
-				logger.Panicf("Invalid address for localhost-only: %s", config.Daemon.Address)
+				logger.Errorf("Invalid address for localhost-only: %s", config.Daemon.Address)
 			}
 		}
 		config.Pex.AllowLocalhost = true
@@ -510,7 +510,7 @@ loop:
 
 				// Not a critical error, but we want it visible in logs
 				head := sb.Block.Head
-				logger.Critical("Created and published a new block, version=%d seq=%d time=%d", head.Version, head.BkSeq, head.Time)
+				logger.Errorf("Created and published a new block, version=%d seq=%d time=%d", head.Version, head.BkSeq, head.Time)
 			}
 
 		case <-unconfirmedRefreshTicker:

@@ -86,7 +86,7 @@ func NewUnknownTransactionStatus() TransactionStatus {
 // NewConfirmedTransactionStatus creates confirmed transaction status
 func NewConfirmedTransactionStatus(height uint64, blockSeq uint64) TransactionStatus {
 	if height == 0 {
-		logger.Panic("Invalid confirmed transaction height")
+		logger.Error("Invalid confirmed transaction height")
 	}
 	return TransactionStatus{
 		Unconfirmed: false,

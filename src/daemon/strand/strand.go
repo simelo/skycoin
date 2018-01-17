@@ -28,7 +28,7 @@ type Request struct {
 // to avoid concurrency issues when conflicting methods are called from
 // multiple goroutines.
 // Methods passed to strand() will block until completed.
-func Strand(logger *logging.Logger, c chan Request, name string, f func() error) error {
+func Strand(logger *logging.Entry, c chan Request, name string, f func() error) error {
 	quit := make(chan struct{})
 	return WithQuit(logger, c, name, f, quit, nil)
 }
@@ -39,7 +39,7 @@ func Strand(logger *logging.Logger, c chan Request, name string, f func() error)
 // Methods passed to WithQuit() will block until completed.
 // WithQuit accepts a quit channel and will return quitErr if the quit
 // channel closes.
-func WithQuit(logger *logging.Logger, c chan Request, name string, f func() error, quit chan struct{}, quitErr error) error {
+func WithQuit(logger *logging.Entry, c chan Request, name string, f func() error, quit chan struct{}, quitErr error) error {
 	if Debug {
 		logger.Debug("Strand precall %s", name)
 	}

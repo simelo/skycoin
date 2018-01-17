@@ -27,6 +27,7 @@ import (
 	"github.com/skycoin/skycoin/src/util/file"
 	"github.com/skycoin/skycoin/src/util/logging"
 	"github.com/skycoin/skycoin/src/visor"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -38,7 +39,9 @@ var (
 	help = false
 
 	logger     = logging.MustGetLogger("main")
-	logFormat  = "[skycoin.%{module}:%{level}] %{message}"
+	//logFormat  = "[skycoin.%{module}:%{level}] %{message}"
+	logFormat  = new(logrus.TextFormatter)
+	//logFormat  = new(logrus.JSONFormatter)
 	logModules = []string{
 		"main",
 		"daemon",
@@ -426,7 +429,7 @@ func createGUI(c *Config, d *daemon.Daemon, host string, quit chan struct{}) (*g
 func initLogging(dataDir string, level string, color, logtofile, logtogui bool, logbuf *bytes.Buffer) (func(), error) {
 	logCfg := logging.DevLogConfig(logModules)
 	logCfg.Format = logFormat
-	logCfg.Colors = color
+	//logCfg.Colors = color
 	logCfg.Level = level
 
 	var fd *os.File
@@ -455,7 +458,8 @@ func initLogging(dataDir string, level string, color, logtofile, logtogui bool, 
 
 	} else {
 		if logtogui {
-			logCfg.Output = io.MultiWriter(os.Stdout, logbuf)
+			//logCfg.Output = io.MultiWriter(os.Stdout, logbuf)
+			logCfg.Output = os.Stdout
 		}
 	}
 
@@ -532,7 +536,7 @@ func Run(c *Config) {
 	defer func() {
 		// try catch panic in main thread
 		if r := recover(); r != nil {
-			logger.Error("recover: %v\nstack:%v", r, string(debug.Stack()))
+			logger.Errorf("recover: %v\nstack:%v", r, string(debug.Stack()))
 		}
 	}()
 
@@ -544,7 +548,7 @@ func Run(c *Config) {
 	}
 	host := fmt.Sprintf("%s:%d", c.WebInterfaceAddr, c.WebInterfacePort)
 	fullAddress := fmt.Sprintf("%s://%s", scheme, host)
-	logger.Critical("Full address: %s", fullAddress)
+	logger.Errorf("Full address: %s", fullAddress)
 	if c.PrintWebInterfaceAddress {
 		fmt.Println(fullAddress)
 	}

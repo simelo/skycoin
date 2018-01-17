@@ -217,7 +217,7 @@ func (w *Wallet) GenerateAddresses(num uint64) []cipher.Address {
 		var err error
 		seed, err = hex.DecodeString(w.getLastSeed())
 		if err != nil {
-			logger.Panicf("decode hex seed failed: %v", err)
+			logger.Errorf("decode hex seed failed: %v", err)
 		}
 		seed, seckeys = cipher.GenerateDeterministicKeyPairsSeed(seed, int(num))
 	}
@@ -482,7 +482,7 @@ func DistributeSpendHours(inputHours, nAddrs uint64, haveChange bool) (uint64, [
 	}
 	spendHours += changeHours
 	if spendHours != remainingHours {
-		logger.Panicf("spendHours != remainingHours (%d != %d), calculation error", spendHours, remainingHours)
+		logger.Errorf("spendHours != remainingHours (%d != %d), calculation error", spendHours, remainingHours)
 	}
 
 	return changeHours, addrHours, spendHours
@@ -581,7 +581,7 @@ func makeCmpUxOutByCoins(uxa []UxBalance, coinsCmp func(a, b uint64) bool) func(
 func cmpUxOutByHash(a, b UxBalance) bool {
 	cmp := bytes.Compare(a.Hash[:], b.Hash[:])
 	if cmp == 0 {
-		logger.Panic("Duplicate UxOut when sorting")
+		logger.Error("Duplicate UxOut when sorting")
 	}
 	return cmp < 0
 }
@@ -601,7 +601,7 @@ func ChooseSpends(uxa []UxBalance, coins uint64, sortStrategy func([]UxBalance))
 
 	for _, ux := range uxa {
 		if ux.Coins == 0 {
-			logger.Panic("UxOut coins are 0, can't spend")
+			logger.Error("UxOut coins are 0, can't spend")
 			return nil, errors.New("UxOut coins are 0, can't spend")
 		}
 	}
@@ -629,7 +629,7 @@ func ChooseSpends(uxa []UxBalance, coins uint64, sortStrategy func([]UxBalance))
 
 	firstNonzero := nonzero[0]
 	if firstNonzero.Hours == 0 {
-		logger.Panic("balance has zero hours unexpectedly")
+		logger.Error("balance has zero hours unexpectedly")
 		return nil, errors.New("balance has zero hours unexpectedly")
 	}
 

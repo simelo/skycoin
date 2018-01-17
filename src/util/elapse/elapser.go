@@ -11,10 +11,10 @@ type Elapser struct {
 	startTime        time.Time
 	elapsedThreshold time.Duration
 	Done             chan bool
-	logger           *logging.Logger
+	logger           *logging.Entry
 }
 
-func NewElapser(elapsedThreshold time.Duration, logger *logging.Logger) *Elapser {
+func NewElapser(elapsedThreshold time.Duration, logger *logging.Entry) *Elapser {
 	elapser := &Elapser{
 		elapsedThreshold: elapsedThreshold,
 		Done:             make(chan bool, 100),

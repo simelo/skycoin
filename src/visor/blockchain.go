@@ -216,7 +216,7 @@ func (bc Blockchain) NewBlock(txns coin.Transactions, currentTime uint64) (*coin
 		}
 		txns, err := bc.processTransactions(b.Body.Transactions)
 		if err != nil {
-			logger.Panic("Impossible Error: not allowed to fail")
+			logger.Error("Impossible Error: not allowed to fail")
 		}
 		b.Body.Transactions = txns
 	}

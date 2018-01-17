@@ -274,7 +274,7 @@ func (rpc *WebRPC) Handler(w http.ResponseWriter, r *http.Request) {
 	rpc.ops <- func(rpc *WebRPC) {
 		defer func() {
 			if r := recover(); r != nil {
-				logger.Critical(fmt.Sprintf("%v", r))
+				logger.Error(fmt.Sprintf("%v", r))
 				resC <- makeErrorResponse(errCodeInternalError, errMsgInternalError)
 			}
 		}()

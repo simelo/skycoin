@@ -96,7 +96,7 @@ const (
 // 	}
 // 	wallets, err := filepath.Glob("*." + wallet.WalletExt)
 // 	if err != nil {
-// 		logger.Critical("Failed to glob wallet files: %v", err)
+// 		logger.Error("Failed to glob wallet files: %v", err)
 // 	} else {
 // 		for _, w := range wallets {
 // 			os.Remove(w)

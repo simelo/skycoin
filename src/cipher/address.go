@@ -64,7 +64,7 @@ func DecodeBase58Address(addr string) (Address, error) {
 func MustDecodeBase58Address(addr string) Address {
 	a, err := DecodeBase58Address(addr)
 	if err != nil {
-		logger.Panicf("Invalid address %s: %v", addr, err)
+		logger.Errorf("Invalid address %s: %v", addr, err)
 	}
 	return a
 }
@@ -82,7 +82,7 @@ func BitcoinDecodeBase58Address(addr string) (Address, error) {
 func BitcoinMustDecodeBase58Address(addr string) Address {
 	a, err := BitcoinDecodeBase58Address(addr)
 	if err != nil {
-		logger.Panicf("Invalid address %s: %v", addr, err)
+		logger.Errorf("Invalid address %s: %v", addr, err)
 	}
 	return a
 }
@@ -261,7 +261,7 @@ func SecKeyFromWalletImportFormat(input string) (SecKey, error) {
 
 	seckey := b[1:33]
 	if len(seckey) != 32 {
-		logger.Panic("...")
+		logger.Error("...")
 	}
 	return NewSecKey(b[1:33]), nil
 }
@@ -270,7 +270,7 @@ func SecKeyFromWalletImportFormat(input string) (SecKey, error) {
 func MustSecKeyFromWalletImportFormat(input string) SecKey {
 	seckey, err := SecKeyFromWalletImportFormat(input)
 	if err != nil {
-		logger.Panicf("MustSecKeyFromWalletImportFormat, invalid seckey, %v", err)
+		logger.Errorf("MustSecKeyFromWalletImportFormat, invalid seckey, %v", err)
 	}
 	return seckey
 }

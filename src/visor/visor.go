@@ -47,7 +47,7 @@ func init() {
 
 func calculateDivisor(precision uint64) uint64 {
 	if precision > droplet.Exponent {
-		logger.Panic("precision must be <= droplet.Exponent")
+		logger.Error("precision must be <= droplet.Exponent")
 	}
 
 	n := droplet.Exponent - precision
@@ -301,7 +301,7 @@ func (vs *Visor) processUnconfirmedTxns() error {
 func (vs *Visor) GenesisPreconditions() {
 	if vs.Config.BlockchainSeckey != (cipher.SecKey{}) {
 		if vs.Config.BlockchainPubkey != cipher.PubKeyFromSecKey(vs.Config.BlockchainSeckey) {
-			logger.Panicf("Cannot create genesis block. Invalid secret key for pubkey")
+			logger.Errorf("Cannot create genesis block. Invalid secret key for pubkey")
 		}
 	}
 }
@@ -315,7 +315,7 @@ func (vs *Visor) RefreshUnconfirmed() []cipher.SHA256 {
 // CreateBlock creates a SignedBlock from pending transactions
 func (vs *Visor) CreateBlock(when uint64) (coin.SignedBlock, error) {
 	if !vs.Config.IsMaster {
-		logger.Panic("Only master chain can create blocks")
+		logger.Error("Only master chain can create blocks")
 	}
 
 	var sb coin.SignedBlock
@@ -413,7 +413,7 @@ func (vs *Visor) verifySignedBlock(b *coin.SignedBlock) error {
 // SignBlock signs a block for master.  Will panic if anything is invalid
 func (vs *Visor) SignBlock(b coin.Block) coin.SignedBlock {
 	if !vs.Config.IsMaster {
-		logger.Panic("Only master chain can sign blocks")
+		logger.Error("Only master chain can sign blocks")
 	}
 	sig := cipher.SignHash(b.HashHeader(), vs.Config.BlockchainSeckey)
 	sb := coin.SignedBlock{
@@ -561,7 +561,7 @@ func (vs *Visor) GetAddressTxns(a cipher.Address) ([]Transaction, error) {
 	for _, ux := range uxs {
 		tx, ok := vs.Unconfirmed.Get(ux.Body.SrcTransaction)
 		if !ok {
-			logger.Critical("Unconfirmed unspent missing unconfirmed txn")
+			logger.Error("Unconfirmed unspent missing unconfirmed txn")
 			continue
 		}
 		txns = append(txns, Transaction{

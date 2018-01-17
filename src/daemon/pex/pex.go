@@ -225,11 +225,11 @@ func New(cfg Config, defaultConns []string) (*Pex, error) {
 	for _, addr := range defaultConns {
 		// Default peers will mark as trusted peers.
 		if err := pex.AddPeer(addr); err != nil {
-			logger.Critical("add peer failed:%v", err)
+			logger.Errorf("add peer failed:%v", err)
 			continue
 		}
 		if err := pex.SetTrusted(addr); err != nil {
-			logger.Critical("pex.SetTrust failed: %v", err)
+			logger.Errorf("pex.SetTrust failed: %v", err)
 		}
 	}
 

@@ -41,7 +41,7 @@ func LoadWallets(dir string) (Wallets, error) {
 	bkpath := dir + "/backup/"
 	if _, err := os.Stat(bkpath); os.IsNotExist(err) {
 		// create the backup dir
-		logger.Critical("create wallet backup dir, %v", bkpath)
+		logger.Errorf("create wallet backup dir, %v", bkpath)
 		if err := os.Mkdir(bkpath, 0777); err != nil {
 			return nil, err
 		}
@@ -113,7 +113,7 @@ func mustUpdateWallet(wlt *Wallet, dir string, tm int64) {
 	// update lastSeed meta data.
 	lsd, seckeys := cipher.GenerateDeterministicKeyPairsSeed([]byte(wlt.Meta["seed"]), 1)
 	if seckeys[0] != wlt.Entries[0].Secret {
-		logger.Panic("update wallet failed, seckey not match")
+		logger.Error("update wallet failed, seckey not match")
 	}
 
 	wlt.Meta["lastSeed"] = hex.EncodeToString(lsd)
@@ -121,7 +121,7 @@ func mustUpdateWallet(wlt *Wallet, dir string, tm int64) {
 	// update tm meta data.
 	wlt.Meta["tm"] = fmt.Sprintf("%v", tm)
 	if err := wlt.Save(dir); err != nil {
-		logger.Panic(err)
+		logger.Error(err)
 	}
 }
 

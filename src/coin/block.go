@@ -143,7 +143,7 @@ func (b Block) GetTransaction(txHash cipher.SHA256) (Transaction, bool) {
 // NewBlockHeader creates block header
 func NewBlockHeader(prev BlockHeader, uxHash cipher.SHA256, currentTime, fee uint64, body BlockBody) BlockHeader {
 	if currentTime <= prev.Time {
-		logger.Panic("Time can only move forward")
+		logger.Error("Time can only move forward")
 	}
 	prevHash := prev.Hash()
 	return BlockHeader{

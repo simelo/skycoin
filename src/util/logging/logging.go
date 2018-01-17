@@ -2,64 +2,44 @@ package logging
 
 import (
 	"io"
-	"io/ioutil"
-	"log"
 	"os"
-
-	logging "github.com/op/go-logging"
+	logging "github.com/sirupsen/logrus"
+	//"fmt"
 )
 
-const (
-	defaultLogFormat = "[%{module}:%{level}] %{message}"
-)
-
-// Logger wraps op/go-logging.Logger
+// Logger wraps logrus.Logger
 type Logger struct {
 	*logging.Logger
 }
 
-// Level embedes the logging's level
-type Level int
+type Entry struct {
+	*logging.Entry
+}
 
 // Log levels.
 const (
-	CRITICAL Level = iota
-	ERROR
-	WARNING
-	NOTICE
-	INFO
-	DEBUG
+	PANIC = logging.PanicLevel
+	FATAL = logging.FatalLevel
+	ERROR = logging.ErrorLevel
+	WARNING = logging.WarnLevel
+	INFO = logging.InfoLevel
+	DEBUG = logging.DebugLevel
 )
 
-var levelNames = []string{
-	"CRITICAL",
-	"ERROR",
-	"WARNING",
-	"NOTICE",
-	"INFO",
-	"DEBUG",
-}
 
 // LogConfig logger configurations
 type LogConfig struct {
-	// for internal usage
-	level Level
 	// Level convertes to level during initialization
 	Level string
 	// list of all modules
 	Modules []string
 	// format
-	Format string
-	// enable colors
-	Colors bool
+	Format logging.Formatter
 	// output
 	Output io.Writer
 }
 
-// LogLevel parse the log level string
-func LogLevel(level string) (logging.Level, error) {
-	return logging.LogLevel(level)
-}
+
 
 // TODO:
 // DefaultLogConfig vs (DevLogConfig + ProdLogConfig) ?
@@ -67,11 +47,11 @@ func LogLevel(level string) (logging.Level, error) {
 // DevLogConfig default development config for logging
 func DevLogConfig(modules []string) *LogConfig {
 	return &LogConfig{
-		level:   DEBUG,   // int
-		Level:   "debug", // string
+		Level:   "DEBUG",
+		//Level:   logging.DebugLevel, // string
 		Modules: modules,
-		Format:  defaultLogFormat,
-		Colors:  true,
+		Format:  new(logging.TextFormatter),
+		//Colors:  true,
 		Output:  os.Stdout,
 	}
 }
@@ -79,46 +59,75 @@ func DevLogConfig(modules []string) *LogConfig {
 // ProdLogConfig Default production config for logging
 func ProdLogConfig(modules []string) *LogConfig {
 	return &LogConfig{
-		level:   ERROR,
-		Level:   "error",
+		Level:   "ERROR",
 		Modules: modules,
-		Format:  defaultLogFormat,
-		Colors:  false,
+		Format:  new(logging.TextFormatter),
 		Output:  os.Stdout,
 	}
 }
 
-// convertes l.Level (string) to l.level (int)
-// or panics if l.Level is invalid
-func (l *LogConfig) initLevel() {
-	level, err := logging.LogLevel(l.Level)
-	if err != nil {
-		log.Panicf("Invalid -log-level %s: %v", l.Level, err)
-	}
-	l.level = Level(level)
-}
 
 // InitLogger initialize logging using this LogConfig;
 // it panics if l.Format is invalid or l.Level is invalid
 func (l *LogConfig) InitLogger() {
-	l.initLevel()
 
-	format := logging.MustStringFormatter(l.Format)
-	logging.SetFormatter(format)
-	for _, s := range l.Modules {
-		logging.SetLevel(logging.Level(l.level), s)
-	}
-	stdout := logging.NewLogBackend(l.Output, "", 0)
-	stdout.Color = l.Colors
-	logging.SetBackend(stdout)
+	logging.SetFormatter(l.Format)
+
+	level,_ := logging.ParseLevel(l.Level)
+
+	logging.SetLevel(level)
+	logging.SetOutput(l.Output)
+
+	//fileHook := NewLogrusWriterHook("log1.txt")
+	//
+	//logging.AddHook(fileHook)
+
+
+
 }
 
 // MustGetLogger safe initialize global logger
-func MustGetLogger(module string) *Logger {
-	return &Logger{logging.MustGetLogger(module)}
+func MustGetLoggera(module string) *Logger {
+	return &Logger{logging.New()}
+}
+
+// MustGetLogger safe initialize global logger
+func MustGetLogger(module string) *Entry {
+
+	entry := logging.WithField("module", module)
+
+	return &Entry{entry}
 }
 
 // Disable disables the logger completely
 func Disable() {
-	logging.SetBackend(logging.NewLogBackend(ioutil.Discard, "", 0))
+	//logging.SetBackend(logging.NewLogBackend(ioutil.Discard, "", 0))
 }
+
+
+// hook
+//
+//type LogrusWriterHook struct {
+//	writter       io.Writer
+//	formatter     *logging.TextFormatter
+//}
+//
+//func NewLogrusWriterHook(writter io.Writer, disableColors bool) (*LogrusWriterHook) {
+//	plainFormatter := &logging.TextFormatter{DisableColors: disableColors}
+//
+//	return &LogrusWriterHook{&writter, plainFormatter}
+//}
+//
+//// Fire event
+//func (hook *LogrusWriterHook) Fire(entry *logging.Entry) error {
+//
+//	plainformat, err := hook.formatter.Format(entry)
+//	line := string(plainformat)
+//	_, err = hook.writter.Write([]byte(line))
+//	if err != nil {
+//		fmt.Fprintf(os.Stderr, "unable to write on writerhook(entry.String)%v", err)
+//		return err
+//	}
+//
+//	return nil
+//}

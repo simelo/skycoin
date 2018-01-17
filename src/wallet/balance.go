@@ -50,7 +50,7 @@ func (bal Balance) Add(other Balance) Balance {
 // Deprecate
 func (bal Balance) Sub(other Balance) Balance {
 	if other.Coins > bal.Coins || other.Hours > bal.Hours {
-		logger.Panic("Cannot subtract balances, second balance is too large")
+		logger.Error("Cannot subtract balances, second balance is too large")
 	}
 	return Balance{
 		Coins: bal.Coins - other.Coins,

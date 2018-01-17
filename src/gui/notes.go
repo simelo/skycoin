@@ -18,12 +18,12 @@ package gui
 // func NewNotesRPC(walletDir string) *NotesRPC {
 // 	rpc := &NotesRPC{}
 // 	if err := os.MkdirAll(walletDir, os.FileMode(0700)); err != nil {
-// 		logger.Panicf("Failed to create notes directory %s: %v", walletDir, err)
+// 		logger.Errorf("Failed to create notes directory %s: %v", walletDir, err)
 // 	}
 // 	rpc.WalletDirectory = walletDir
 // 	w, err := wallet.LoadNotes(rpc.WalletDirectory)
 // 	if err != nil {
-// 		logger.Panicf("Failed to load all notes: %v", err)
+// 		logger.Errorf("Failed to load all notes: %v", err)
 // 	}
 // 	wallet.CreateNoteFileIfNotExist(walletDir)
 // 	rpc.Notes = w

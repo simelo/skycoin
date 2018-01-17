@@ -64,7 +64,7 @@ func convertToMessage(id int, msg []byte, debugPrint bool) (Message, error) {
 		// This occurs only when the user registers an interface that does
 		// match the Message interface.  They should have known about this
 		// earlier via a call to VerifyMessages
-		logger.Panic("Message obtained from map does not match Message interface")
+		logger.Error("Message obtained from map does not match Message interface")
 		return nil, errors.New("MessageIdMaps contain non-Message")
 	}
 	return m, nil
@@ -95,7 +95,7 @@ var encodeMessage = func(msg Message) []byte {
 	msgID, succ := MessageIDMap[t]
 	if !succ {
 		txt := "Attempted to serialize message struct not in MessageIdMap: %v"
-		logger.Panicf(txt, msg)
+		logger.Errorf(txt, msg)
 	}
 	bMsg := encoder.Serialize(msg)
 

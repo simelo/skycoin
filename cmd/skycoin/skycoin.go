@@ -159,6 +159,8 @@ type Config struct {
 	TestChain    bool
 	Logtogui     bool
 	LogBuffSize  int
+
+	AddressPreffix string
 }
 
 func (c *Config) register() {
@@ -220,6 +222,7 @@ func (c *Config) register() {
 	flag.BoolVar(&c.TestChain, "testchain", false, "Run node in test chain")
 	flag.BoolVar(&c.Logtogui, "logtogui", true, "log to gui")
 	flag.IntVar(&c.LogBuffSize, "logbufsize", c.LogBuffSize, "Log size saved in memeory for gui show")
+	flag.StringVar(&c.AddressPreffix, "address-prefix", c.AddressPreffix, "Prefix for the addresses generated inside the blockchain")
 }
 
 var devConfig = Config{
@@ -287,6 +290,8 @@ var devConfig = Config{
 	// to show up as a peer
 	ConnectTo:   "",
 	LogBuffSize: 8388608, //1024*1024*8
+
+	AddressPreffix: "TEST",
 }
 
 // Parse prepare the config
@@ -379,6 +384,7 @@ func (c *Config) postProcess(chaincfg ChainConfig) {
 		// Run in arbitrating mode if the node is master
 		c.Arbitrating = true
 	}
+
 	if c.TestChain {
 		// Never download peers list if running testnet
 		c.DownloadPeerList = false
@@ -389,6 +395,7 @@ func (c *Config) postProcess(chaincfg ChainConfig) {
 		if len(c.DefaultConnections) == 0 {
 			logger.Info("Unable to load dafault connections from %v", c.DataDirectory)
 			c.DefaultConnections = chaincfg.DefaultConnections
+			logger.Info("Using prefix '%s' for addresses", c.AddressPreffix)
 		}
 	} else {
 		c.DefaultConnections = chaincfg.DefaultConnections

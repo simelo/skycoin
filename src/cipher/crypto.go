@@ -254,7 +254,7 @@ func SignHash(hash SHA256, sec SecKey) Sig {
 			logger.Panic("SignHash, error: secp256k1.Sign returned non-null " +
 				"invalid non-null signature")
 		}
-		if ChkSig(AddressFromPubKey(pubkey), hash, sig) != nil {
+		if ChkSig(AddressFromPubKey(pubkey, ""), hash, sig) != nil {
 			logger.Panic("SignHash error: ChkSig failed for signature")
 		}
 	}
@@ -272,7 +272,7 @@ func ChkSig(address Address, hash SHA256, sig Sig) error {
 	if rawPubKey == nil {
 		return errors.New("Invalig sig: PubKey recovery failed")
 	}
-	if address != AddressFromPubKey(NewPubKey(rawPubKey)) {
+	if address != AddressFromPubKey(NewPubKey(rawPubKey), address.Prefix) {
 		return errors.New("Invalid sig: address does not match output address")
 	}
 	if secp256k1.VerifySignature(hash[:], sig[:], rawPubKey[:]) != 1 {
@@ -458,7 +458,7 @@ func TestSecKeyHash(seckey SecKey, hash SHA256) error {
 	}
 
 	//verify ChkSig
-	addr := AddressFromPubKey(pubkey)
+	addr := AddressFromPubKey(pubkey, "")
 	err = ChkSig(addr, hash, sig)
 	if err != nil {
 		return errors.New("impossible error TestSecKey, ChkSig Failed, " +

@@ -41,7 +41,7 @@ func RequireError(t *testing.T, err error, msg string) {
 
 func MakeAddress() cipher.Address {
 	p, _ := cipher.GenerateKeyPair()
-	return cipher.AddressFromPubKey(p)
+	return cipher.AddressFromPubKey(p, "")
 }
 
 func RandBytes(t *testing.T, n int) []byte {

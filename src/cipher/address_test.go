@@ -10,7 +10,7 @@ import (
 
 func TestMustDecodeBase58Address(t *testing.T) {
 	p, _ := GenerateKeyPair()
-	a := AddressFromPubKey(p)
+	a := AddressFromPubKey(p, "")
 	require.NoError(t, a.Verify(p))
 
 	require.Panics(t, func() { MustDecodeBase58Address("") })
@@ -46,7 +46,7 @@ func TestMustDecodeBase58Address(t *testing.T) {
 
 func TestDecodeBase58Address(t *testing.T) {
 	p, _ := GenerateKeyPair()
-	a := AddressFromPubKey(p)
+	a := AddressFromPubKey(p, "")
 	require.NoError(t, a.Verify(p))
 
 	a2, err := DecodeBase58Address("")
@@ -90,7 +90,7 @@ func TestDecodeBase58Address(t *testing.T) {
 
 func TestAddressFromBytes(t *testing.T) {
 	p, _ := GenerateKeyPair()
-	a := AddressFromPubKey(p)
+	a := AddressFromPubKey(p, "")
 	a2, err := addressFromBytes(a.Bytes())
 	require.NoError(t, err)
 	require.Equal(t, a2, a)
@@ -107,7 +107,7 @@ func TestAddressFromBytes(t *testing.T) {
 //encode and decode
 func TestAddressRoundtrip(t *testing.T) {
 	p, _ := GenerateKeyPair()
-	a := AddressFromPubKey(p)
+	a := AddressFromPubKey(p, "")
 	a2, err := addressFromBytes(a.Bytes())
 	require.NoError(t, err)
 	require.Equal(t, a, a2)
@@ -116,7 +116,7 @@ func TestAddressRoundtrip(t *testing.T) {
 
 func TestAddressVerify(t *testing.T) {
 	p, _ := GenerateKeyPair()
-	a := AddressFromPubKey(p)
+	a := AddressFromPubKey(p, "SOME")
 	// Valid pubkey+address
 	require.NoError(t, a.Verify(p))
 	// Invalid pubkey
@@ -130,7 +130,7 @@ func TestAddressVerify(t *testing.T) {
 
 func TestAddressString(t *testing.T) {
 	p, _ := GenerateKeyPair()
-	a := AddressFromPubKey(p)
+	a := AddressFromPubKey(p, "")
 	s := a.String()
 	a2, err := DecodeBase58Address(s)
 	require.NoError(t, err)
@@ -231,7 +231,7 @@ func TestAddressBulk(t *testing.T) {
 	for i := 0; i < 1024; i++ {
 		pub, _ := GenerateDeterministicKeyPair(RandByte(32))
 
-		a := AddressFromPubKey(pub)
+		a := AddressFromPubKey(pub, "")
 		require.NoError(t, a.Verify(pub))
 		s := a.String()
 		a2, err := DecodeBase58Address(s)

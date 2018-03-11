@@ -94,6 +94,7 @@ func NewWallet(wltName string, opts Options) (*Wallet, error) {
 			"tm":       fmt.Sprintf("%v", time.Now().Unix()),
 			"type":     "deterministic",
 			"coin":     string(coin),
+			"prefix":   "",
 		},
 	}
 
@@ -112,7 +113,7 @@ func Load(wltFile string) (*Wallet, error) {
 
 // newWalletFromReadable creates wallet from readable wallet
 func newWalletFromReadable(r *ReadableWallet) (*Wallet, error) {
-	ets, err := r.Entries.ToWalletEntries()
+	ets, err := r.Entries.ToWalletEntries(r.Meta["prefix"])
 	if err != nil {
 		return nil, err
 	}
@@ -148,6 +149,10 @@ func (w *Wallet) Validate() error {
 
 	if _, ok := w.Meta["coin"]; !ok {
 		return errors.New("coin field not set")
+	}
+
+	if _, ok := w.Meta["prefix"]; !ok {
+		return errors.New("prefix not set")
 	}
 
 	return nil
@@ -238,7 +243,7 @@ func (w *Wallet) GenerateAddresses(num uint64) ([]cipher.Address, error) {
 	addrs := make([]cipher.Address, len(seckeys))
 	for i, s := range seckeys {
 		p := cipher.PubKeyFromSecKey(s)
-		a := cipher.AddressFromPubKey(p)
+		a := cipher.AddressFromPubKey(p, w.Meta["prefix"])
 		addrs[i] = a
 		w.Entries = append(w.Entries, Entry{
 			Address: a,

@@ -84,6 +84,6 @@ func TestTransactionIsLocked(t *testing.T) {
 
 	// A random address should not be locked
 	pubKey, _ := cipher.GenerateKeyPair()
-	addr := cipher.AddressFromPubKey(pubKey)
+	addr := cipher.AddressFromPubKey(pubKey, "")
 	test(addr.String(), false)
 }

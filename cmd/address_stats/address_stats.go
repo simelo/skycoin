@@ -54,8 +54,8 @@ func main() {
 
 	//generate addresses
 	for _, p := range PubKeys {
-		Addresses = append(Addresses, cipher.AddressFromPubKey(p).String())
-		RawAddresses = append(RawAddresses, cipher.AddressFromPubKey(p).Key)
+		Addresses = append(Addresses, cipher.AddressFromPubKey(p, "").String())
+		RawAddresses = append(RawAddresses, cipher.AddressFromPubKey(p, "").Key)
 	}
 
 	//analize addresses

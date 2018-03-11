@@ -75,7 +75,7 @@ func AddPrivateKey(wlt *wallet.Wallet, key string) error {
 	}
 
 	pk := cipher.PubKeyFromSecKey(sk)
-	addr := cipher.AddressFromPubKey(pk)
+	addr := cipher.AddressFromPubKey(pk, wlt.Meta["prefix"])
 
 	entry := wallet.Entry{
 		Address: addr,

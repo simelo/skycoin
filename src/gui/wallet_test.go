@@ -1282,7 +1282,7 @@ func TestWalletNewAddressesHandler(t *testing.T) {
 
 	for i := 0; i < 3; i++ {
 		pub, _ := cipher.GenerateDeterministicKeyPair(cipher.RandByte(32))
-		addrs[i] = cipher.AddressFromPubKey(pub)
+		addrs[i] = cipher.AddressFromPubKey(pub, "")
 		responseAddresses.Address = append(responseAddresses.Address, addrs[i].String())
 	}
 

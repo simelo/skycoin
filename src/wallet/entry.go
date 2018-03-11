@@ -14,7 +14,7 @@ type Entry struct {
 }
 
 // NewEntryFromReadable creates WalletEntry base one ReadableWalletEntry
-func NewEntryFromReadable(w *ReadableEntry) (*Entry, error) {
+func NewEntryFromReadable(w *ReadableEntry, wallet_prefix string) (*Entry, error) {
 	if w.Secret == "" {
 		return nil, errors.New("secret field is empty")
 	}
@@ -24,7 +24,7 @@ func NewEntryFromReadable(w *ReadableEntry) (*Entry, error) {
 		return nil, err
 	}
 
-	a := cipher.AddressFromSecKey(s)
+	a := cipher.AddressFromSecKey(s, wallet_prefix)
 	if w.Address != "" {
 		if a.String() != w.Address {
 			return nil, errors.New("address does not match the secret")

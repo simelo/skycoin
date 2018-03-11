@@ -34,20 +34,23 @@ type Checksum [4]byte
 type Address struct {
 	Version byte      //1 byte
 	Key     Ripemd160 //20 byte pubkey hash
+	Prefix  string    //variable size string with the prefix for String representation of the Address
 }
 
 // AddressFromPubKey creates Address from PubKey as ripemd160(sha256(sha256(pubkey)))
-func AddressFromPubKey(pubKey PubKey) Address {
+func AddressFromPubKey(pubKey PubKey, prefix string) Address {
+	rawAddress := pubKey.ToAddressHash()
 	addr := Address{
 		Version: 0,
-		Key:     pubKey.ToAddressHash(),
+		Key:     rawAddress,
+		Prefix:  prefix,
 	}
 	return addr
 }
 
 // AddressFromSecKey generates address from secret key
-func AddressFromSecKey(secKey SecKey) Address {
-	return AddressFromPubKey(PubKeyFromSecKey(secKey))
+func AddressFromSecKey(secKey SecKey, prefix string) Address {
+	return AddressFromPubKey(PubKeyFromSecKey(secKey), prefix)
 }
 
 // DecodeBase58Address creates an Address from its base58 encoding
@@ -118,7 +121,7 @@ func addressFromBytes(b []byte) (addr Address, err error) {
 
 // Bytes return address as a byte slice
 func (addr *Address) Bytes() []byte {
-	b := make([]byte, 20+1+4)
+	b := make([]byte, 4+20+1+4)
 	copy(b[0:20], addr.Key[0:20])
 	b[20] = addr.Version
 	chksum := addr.Checksum()
@@ -148,12 +151,24 @@ func (addr Address) Verify(key PubKey) error {
 	return nil
 }
 
+func (addr *Address) stringBytes() []byte {
+	b := addr.Bytes()
+	if len(addr.Prefix) == 0 {
+		return b
+	}
+	bprefix := make([]byte, 0)
+
+
+	return append(bprefix, b...)
+}
+
 // String address as Base58 encoded string
 // Returns address as printable
 // version is first byte in binary format
 // in printed address its key, version, checksum
 func (addr Address) String() string {
-	return string(base58.Hex2Base58(addr.Bytes()))
+	s := string(base58.Hex2Base58(addr.stringBytes()))
+	return s
 }
 
 // BitcoinString convert bitcoin address to hex string

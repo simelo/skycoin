@@ -264,7 +264,7 @@ func TestWalletAddEntry(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			w := Wallet{}
 			require.NoError(t, w.Load(tc.wltFile))
-			a := cipher.AddressFromSecKey(tc.secKey)
+			a := cipher.AddressFromSecKey(tc.secKey, "")
 			p := cipher.PubKeyFromSecKey(tc.secKey)
 			require.Equal(t, tc.err, w.AddEntry(Entry{
 				Address: a,

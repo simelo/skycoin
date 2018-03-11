@@ -472,7 +472,7 @@ func TestProcessTransactions(t *testing.T) {
 	keys := make([]cipher.SecKey, 10)
 	for i := 0; i < 10; i++ {
 		p, s := cipher.GenerateKeyPair()
-		toAddrs[i] = cipher.AddressFromPubKey(p)
+		toAddrs[i] = cipher.AddressFromPubKey(p, "")
 		keys[i] = s
 	}
 

@@ -31,7 +31,7 @@ func MakeTransactionForChain(t *testing.T, bc *Blockchain, ux coin.UxOut, sec ci
 	chrs, err := ux.CoinHours(bc.Time())
 	require.NoError(t, err)
 
-	require.Equal(t, cipher.AddressFromPubKey(cipher.PubKeyFromSecKey(sec)), ux.Body.Address)
+	require.Equal(t, cipher.AddressFromPubKey(cipher.PubKeyFromSecKey(sec), ""), ux.Body.Address)
 
 	knownUx, exists := bc.Unspent().Get(ux.Hash())
 	require.True(t, exists)
@@ -87,7 +87,7 @@ func MakeBlockchain(t *testing.T, db *bolt.DB, seckey cipher.SecKey) *Blockchain
 
 func MakeAddress() (cipher.PubKey, cipher.SecKey, cipher.Address) {
 	p, s := cipher.GenerateKeyPair()
-	a := cipher.AddressFromPubKey(p)
+	a := cipher.AddressFromPubKey(p, "")
 	return p, s, a
 }
 

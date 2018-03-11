@@ -173,14 +173,14 @@ func makeTransaction() Transaction {
 
 func makeAddress() cipher.Address {
 	p, _ := cipher.GenerateKeyPair()
-	return cipher.AddressFromPubKey(p)
+	return cipher.AddressFromPubKey(p, "")
 }
 
 func makeUxBodyWithSecret() (coin.UxBody, cipher.SecKey) {
 	p, s := cipher.GenerateKeyPair()
 	return coin.UxBody{
 		SrcTransaction: cipher.SumSHA256(randBytes(128)),
-		Address:        cipher.AddressFromPubKey(p),
+		Address:        cipher.AddressFromPubKey(p, ""),
 		Coins:          1e6,
 		Hours:          100,
 	}, s

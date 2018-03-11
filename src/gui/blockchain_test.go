@@ -23,7 +23,7 @@ import (
 
 func makeBadBlock(t *testing.T) *coin.Block {
 	genPublic, _ := cipher.GenerateKeyPair()
-	genAddress := cipher.AddressFromPubKey(genPublic)
+	genAddress := cipher.AddressFromPubKey(genPublic, "")
 	var genCoins uint64 = 1000e6
 	var genTime uint64 = 1000
 	now := genTime + 100

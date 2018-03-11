@@ -92,7 +92,7 @@ func TestPubKeyToAddressHash(t *testing.T) {
 
 func TestPubKeyToAddress(t *testing.T) {
 	p, _ := GenerateKeyPair()
-	addr := AddressFromPubKey(p)
+	addr := AddressFromPubKey(p, "")
 	//func (self Address) Verify(key PubKey) error {
 	err := addr.Verify(p)
 	assert.Nil(t, err)
@@ -105,7 +105,7 @@ func TestPubKeyToAddress(t *testing.T) {
 func TestPubKeyToAddress2(t *testing.T) {
 	for i := 0; i < 1024; i++ {
 		p, _ := GenerateKeyPair()
-		addr := AddressFromPubKey(p)
+		addr := AddressFromPubKey(p, "")
 		//func (self Address) Verify(key PubKey) error {
 		err := addr.Verify(p)
 		assert.Nil(t, err)
@@ -222,7 +222,7 @@ func TestChkSig(t *testing.T) {
 	p, s := GenerateKeyPair()
 	assert.Nil(t, p.Verify())
 	assert.Nil(t, s.Verify())
-	a := AddressFromPubKey(p)
+	a := AddressFromPubKey(p, "")
 	assert.Nil(t, a.Verify(p))
 	b := randBytes(t, 256)
 	h := SumSHA256(b)
@@ -243,7 +243,7 @@ func TestChkSig(t *testing.T) {
 
 	// Different secret keys should not create same sig
 	p2, s2 := GenerateKeyPair()
-	a2 := AddressFromPubKey(p2)
+	a2 := AddressFromPubKey(p2, "")
 	h = SHA256{}
 	sig = SignHash(h, s)
 	sig2 = SignHash(h, s2)
@@ -264,7 +264,7 @@ func TestChkSig(t *testing.T) {
 
 func TestSignHash(t *testing.T) {
 	p, s := GenerateKeyPair()
-	a := AddressFromPubKey(p)
+	a := AddressFromPubKey(p, "")
 	h := SumSHA256(randBytes(t, 256))
 	sig := SignHash(h, s)
 	assert.NotEqual(t, sig, Sig{})

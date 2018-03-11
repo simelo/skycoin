@@ -40,7 +40,7 @@ func makeTransactions(t *testing.T, n int) Transactions {
 
 func makeAddress() cipher.Address {
 	p, _ := cipher.GenerateKeyPair()
-	return cipher.AddressFromPubKey(p)
+	return cipher.AddressFromPubKey(p, "")
 }
 
 func copyTransaction(tx Transaction) Transaction {
@@ -257,9 +257,9 @@ func TestTransactionSignInputs(t *testing.T) {
 	require.Equal(t, len(tx.Sigs), 2)
 	require.Equal(t, tx.HashInner(), h)
 	p := cipher.PubKeyFromSecKey(s)
-	a := cipher.AddressFromPubKey(p)
+	a := cipher.AddressFromPubKey(p, "")
 	p = cipher.PubKeyFromSecKey(s2)
-	a2 := cipher.AddressFromPubKey(p)
+	a2 := cipher.AddressFromPubKey(p, "")
 	require.Nil(t, cipher.ChkSig(a, cipher.AddSHA256(h, tx.In[0]), tx.Sigs[0]))
 	require.Nil(t, cipher.ChkSig(a2, cipher.AddSHA256(h, tx.In[1]), tx.Sigs[1]))
 	require.NotNil(t, cipher.ChkSig(a, h, tx.Sigs[1]))

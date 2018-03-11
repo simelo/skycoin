@@ -35,7 +35,7 @@ func CreateAddresses(coinType CoinType, seed string, genCount int, hideSecretKey
 		case CoinTypeBitcoin:
 			entry = GetBitcoinWalletEntry(pub, sec)
 		case CoinTypeSkycoin:
-			entry = GetSkycoinWalletEntry(pub, sec)
+			entry = GetSkycoinWalletEntry(pub, sec, wallet.Meta["prefix"])
 		default:
 			return nil, fmt.Errorf(`unknown coinType "%s"`, coinType)
 		}
@@ -51,9 +51,9 @@ func CreateAddresses(coinType CoinType, seed string, genCount int, hideSecretKey
 }
 
 // GetSkycoinWalletEntry returns a ReadableEntry in Skycoin format
-func GetSkycoinWalletEntry(pub cipher.PubKey, sec cipher.SecKey) ReadableEntry {
+func GetSkycoinWalletEntry(pub cipher.PubKey, sec cipher.SecKey, prefix string) ReadableEntry {
 	return ReadableEntry{
-		Address: cipher.AddressFromPubKey(pub).String(),
+		Address: cipher.AddressFromPubKey(pub, prefix).String(),
 		Public:  pub.Hex(),
 		Secret:  sec.Hex(),
 	}

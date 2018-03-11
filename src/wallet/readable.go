@@ -33,9 +33,9 @@ func LoadReadableEntry(filename string) (ReadableEntry, error) {
 
 // NewReadableEntryFromPubkey creates a ReadableWalletEntry given a pubkey hex string.
 // The Secret field is left empty.
-func NewReadableEntryFromPubkey(pub string) ReadableEntry {
+func NewReadableEntryFromPubkey(pub string, wallet_prefix string) ReadableEntry {
 	pubkey := cipher.MustPubKeyFromHex(pub)
-	addr := cipher.AddressFromPubKey(pubkey)
+	addr := cipher.AddressFromPubKey(pubkey, wallet_prefix)
 	return ReadableEntry{
 		Address: addr.String(),
 		Public:  pub,
@@ -51,10 +51,10 @@ func (re *ReadableEntry) Save(filename string) error {
 type ReadableEntries []ReadableEntry
 
 // ToWalletEntries convert readable entries to entries
-func (res ReadableEntries) ToWalletEntries() ([]Entry, error) {
+func (res ReadableEntries) ToWalletEntries(wallet_prefix string) ([]Entry, error) {
 	entries := make([]Entry, len(res))
 	for i, re := range res {
-		e, err := NewEntryFromReadable(&re)
+		e, err := NewEntryFromReadable(&re, wallet_prefix)
 		if err != nil {
 			return []Entry{}, err
 		}

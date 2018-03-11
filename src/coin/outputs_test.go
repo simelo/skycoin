@@ -29,7 +29,7 @@ func makeUxBodyWithSecret(t *testing.T) (UxBody, cipher.SecKey) {
 	p, s := cipher.GenerateKeyPair()
 	return UxBody{
 		SrcTransaction: testutil.RandSHA256(t),
-		Address:        cipher.AddressFromPubKey(p),
+		Address:        cipher.AddressFromPubKey(p, ""),
 		Coins:          1e6,
 		Hours:          100,
 	}, s

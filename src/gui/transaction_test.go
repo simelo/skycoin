@@ -58,7 +58,7 @@ func makeUxOutWithSecret(t *testing.T) (coin.UxOut, cipher.SecKey) {
 
 func makeAddress() cipher.Address {
 	p, _ := cipher.GenerateKeyPair()
-	return cipher.AddressFromPubKey(p)
+	return cipher.AddressFromPubKey(p, "")
 }
 
 func makeTransactionWithSecret(t *testing.T) (coin.Transaction, cipher.SecKey) {
@@ -77,7 +77,7 @@ func makeUxBodyWithSecret(t *testing.T) (coin.UxBody, cipher.SecKey) {
 	p, s := cipher.GenerateKeyPair()
 	return coin.UxBody{
 		SrcTransaction: testutil.RandSHA256(t),
-		Address:        cipher.AddressFromPubKey(p),
+		Address:        cipher.AddressFromPubKey(p, ""),
 		Coins:          1e6,
 		Hours:          100,
 	}, s

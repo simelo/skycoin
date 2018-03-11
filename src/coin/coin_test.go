@@ -11,7 +11,7 @@ import (
 
 var (
 	genPublic, genSecret        = cipher.GenerateKeyPair()
-	genAddress                  = cipher.AddressFromPubKey(genPublic)
+	genAddress                  = cipher.AddressFromPubKey(genPublic, "")
 	_genTime             uint64 = 1000
 	_genCoins            uint64 = 1000e6
 	_genCoinHours        uint64 = 1000 * 1000
@@ -37,7 +37,7 @@ func TestAddress1(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	addr := cipher.AddressFromPubKey(cipher.NewPubKey(b))
+	addr := cipher.AddressFromPubKey(cipher.NewPubKey(b), "")
 	_ = addr
 
 	///func SignHash(hash cipher.SHA256, sec SecKey) (Sig, error) {
@@ -57,7 +57,7 @@ func TestAddress2(t *testing.T) {
 
 	seckey := cipher.NewSecKey(b)
 	pubkey := cipher.PubKeyFromSecKey(seckey)
-	addr := cipher.AddressFromPubKey(pubkey)
+	addr := cipher.AddressFromPubKey(pubkey, "")
 	_ = addr
 
 	///func SignHash(hash cipher.SHA256, sec SecKey) (Sig, error) {
@@ -100,7 +100,7 @@ func TestCrypto2(t *testing.T) {
 	seckey := cipher.NewSecKey(b)
 	pubkey := cipher.PubKeyFromSecKey(seckey)
 
-	addr := cipher.AddressFromPubKey(pubkey)
+	addr := cipher.AddressFromPubKey(pubkey, "")
 	_ = addr
 
 	test := []byte("test message")
@@ -122,13 +122,13 @@ func _gpub(s cipher.SecKey) cipher.PubKey {
 }
 
 func _gaddr(s cipher.SecKey) cipher.Address {
-	return cipher.AddressFromSecKey(s)
+	return cipher.AddressFromSecKey(s, "")
 }
 
 func _gaddrA1(S []cipher.SecKey) []cipher.Address {
 	A := make([]cipher.Address, len(S))
 	for i := 0; i < len(S); i++ {
-		A[i] = cipher.AddressFromSecKey(S[i])
+		A[i] = cipher.AddressFromSecKey(S[i], "")
 	}
 	return A
 }

@@ -444,7 +444,7 @@ func TestServiceCreateAndSignTx(t *testing.T) {
 		uxouts = append(uxouts, uxout)
 
 		p, _ := cipher.GenerateKeyPair()
-		a := cipher.AddressFromPubKey(p)
+		a := cipher.AddressFromPubKey(p, "")
 		addrs = append(addrs, a)
 	}
 
@@ -457,7 +457,7 @@ func TestServiceCreateAndSignTx(t *testing.T) {
 		uxoutsNoHours = append(uxoutsNoHours, uxout)
 
 		p, _ := cipher.GenerateKeyPair()
-		a := cipher.AddressFromPubKey(p)
+		a := cipher.AddressFromPubKey(p, "")
 		addrsNoHours = append(addrsNoHours, a)
 	}
 
@@ -610,7 +610,7 @@ func makeUxBody(t *testing.T, s cipher.SecKey) coin.UxBody {
 	p := cipher.PubKeyFromSecKey(s)
 	return coin.UxBody{
 		SrcTransaction: cipher.SumSHA256(testutil.RandBytes(t, 128)),
-		Address:        cipher.AddressFromPubKey(p),
+		Address:        cipher.AddressFromPubKey(p, ""),
 		Coins:          2e6,
 		Hours:          100,
 	}

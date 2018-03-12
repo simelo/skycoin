@@ -156,10 +156,12 @@ func (addr *Address) stringBytes() []byte {
 	if len(addr.Prefix) == 0 {
 		return b
 	}
-	bprefix := make([]byte, 0)
-
-
-	return append(bprefix, b...)
+	str := addr.Prefix + string(base58.Hex2Base58(addr.Bytes()))
+	by, err := base58.Base582Hex(str)
+	if err != nil {
+		panic(err)
+	}
+	return by
 }
 
 // String address as Base58 encoded string

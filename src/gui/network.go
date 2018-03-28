@@ -110,7 +110,26 @@ func infoHandler(gateway Gatewayer) http.HandlerFunc {
 
 		connectionCount := len(listconnections)
 		defaultconnectionCount := len(listdefault)
-		list := make([]Status, defaultconnectionCount, defaultconnectionCount+1)
+		list := make([]Status, 0)
+		var tmpstruct Status
+
+		// var tmpstatus bool
+
+		for _, tmpdefault := range listdefault {
+
+			for _, tmpconnection := range listconnections {
+
+				if tmpdefault == string(tmpconnection.Addr) {
+					tmpstatus = true
+				}
+
+			}
+
+			tmpstruct = Status{address: tmpdefault, status: tmpstatus}
+
+			list = append(list, tmpstruct)
+
+		}
 
 		resp := &InfoResponse{
 			StatusList:             list,

@@ -8,6 +8,19 @@ import (
 	wh "github.com/skycoin/skycoin/src/util/http" //http,json helpers
 )
 
+// Status encapsulates useful information from the ...
+type Status struct {
+	address string `json:"ip:port"`
+	status  bool   `json:"is_conections"`
+}
+
+// InfoResponse encapsulates useful information from the ...
+type InfoResponse struct {
+	StatusList             []Status `json:"list_status"`
+	DefaultConnectionCount int      `json:"default_connection_count"`
+	OpenConnectionCount    int      `json:"open_connection_count"`
+}
+
 func connectionHandler(gateway Gatewayer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -81,5 +94,35 @@ func exchgConnectionsHandler(gateway Gatewayer) http.HandlerFunc {
 		sort.Strings(conns)
 
 		wh.SendJSONOr500(logger, w, conns)
+	}
+}
+
+// TODO Function to obtain the issue info # 1049
+func infoHandler(gateway Gatewayer) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			wh.Error405(w)
+			return
+		}
+
+		listdefault := gateway.GetDefaultConnections()
+		listconnections := gateway.GetConnections().Connections
+
+		connectionCount := len(listconnections)
+		defaultconnectionCount := len(listdefault)
+		list := make([]Status, defaultconnectionCount, defaultconnectionCount+1)
+
+		resp := &InfoResponse{
+			StatusList:             list,
+			DefaultConnectionCount: defaultconnectionCount,
+			OpenConnectionCount:    connectionCount,
+		}
+
+		if resp == nil {
+			wh.Error404(w)
+			return
+		}
+
+		wh.SendJSONOr500(logger, w, &resp)
 	}
 }

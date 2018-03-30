@@ -2,23 +2,19 @@ package gui
 
 // Network-related information for the GUI
 import (
+	"fmt"
 	"net/http"
 	"sort"
 
 	wh "github.com/skycoin/skycoin/src/util/http" //http,json helpers
 )
 
-// Status encapsulates useful information from the ...
-type Status struct {
-	address string `json:"ip:port"`
-	status  bool   `json:"is_conections"`
-}
-
 // InfoResponse encapsulates useful information from the ...
 type InfoResponse struct {
-	StatusList             []Status `json:"list_status"`
-	DefaultConnectionCount int      `json:"default_connection_count"`
-	OpenConnectionCount    int      `json:"open_connection_count"`
+	StatusListEnable []string `json:"list_status_enable"`
+	// StatusListDisable      []string `json:"list_status_disable"`
+	DefaultConnectionCount int `json:"default_connection_count"`
+	OpenConnectionCount    int `json:"open_connection_count"`
 }
 
 func connectionHandler(gateway Gatewayer) http.HandlerFunc {
@@ -110,32 +106,27 @@ func infoHandler(gateway Gatewayer) http.HandlerFunc {
 
 		connectionCount := len(listconnections)
 		defaultconnectionCount := len(listdefault)
-		list := make([]Status, 0)
-		var tmpstruct Status
-
-		// var tmpstatus bool
+		var enable []string
+		countenable := 0
 
 		for _, tmpdefault := range listdefault {
 
 			for _, tmpconnection := range listconnections {
 
 				if tmpdefault == string(tmpconnection.Addr) {
-					tmpstatus = true
+					enable = append(enable, tmpdefault)
+					countenable++
 				}
-
 			}
-
-			tmpstruct = Status{address: tmpdefault, status: tmpstatus}
-
-			list = append(list, tmpstruct)
-
 		}
 
 		resp := &InfoResponse{
-			StatusList:             list,
+			StatusListEnable:       enable,
 			DefaultConnectionCount: defaultconnectionCount,
 			OpenConnectionCount:    connectionCount,
 		}
+
+		fmt.Println(resp)
 
 		if resp == nil {
 			wh.Error404(w)
@@ -143,5 +134,6 @@ func infoHandler(gateway Gatewayer) http.HandlerFunc {
 		}
 
 		wh.SendJSONOr500(logger, w, &resp)
+
 	}
 }

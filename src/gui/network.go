@@ -2,19 +2,23 @@ package gui
 
 // Network-related information for the GUI
 import (
-	"fmt"
 	"net/http"
 	"sort"
 
 	wh "github.com/skycoin/skycoin/src/util/http" //http,json helpers
 )
 
-// InfoResponse encapsulates useful information from the ...
-type InfoResponse struct {
-	StatusListEnable []string `json:"list_status_enable"`
-	// StatusListDisable      []string `json:"list_status_disable"`
-	DefaultConnectionCount int `json:"default_connection_count"`
-	OpenConnectionCount    int `json:"open_connection_count"`
+// ConnectionStatus structs
+type ConnectionStatus struct {
+	Connection string `json:connection`
+	isAlive    bool   `json:isalive`
+}
+
+type ConnectionsHealth struct {
+	Count        int                `json:"count"`
+	TotalAlive   int                `json:total_alive`
+	TotalOffline int                `json:total_offline`
+	Connections  []ConnectionStatus `json:"connections"`
 }
 
 func connectionHandler(gateway Gatewayer) http.HandlerFunc {
@@ -93,47 +97,48 @@ func exchgConnectionsHandler(gateway Gatewayer) http.HandlerFunc {
 	}
 }
 
-// TODO Function to obtain the issue info # 1049
-func infoHandler(gateway Gatewayer) http.HandlerFunc {
+func defaultStatusHandler(gateway Gatewayer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			wh.Error405(w)
 			return
 		}
 
-		listdefault := gateway.GetDefaultConnections()
-		listconnections := gateway.GetConnections().Connections
+		connsDefault := gateway.GetDefaultConnections()
+		sort.Strings(connsDefault)
+		connsAll := gateway.GetConnections().Connections
 
-		connectionCount := len(listconnections)
-		defaultconnectionCount := len(listdefault)
-		var enable []string
-		countenable := 0
+		countDefault, totalAlive := len(connsDefault), 0
+		totalOffline := countDefault
 
-		for _, tmpdefault := range listdefault {
-
-			for _, tmpconnection := range listconnections {
-
-				if tmpdefault == string(tmpconnection.Addr) {
-					enable = append(enable, tmpdefault)
-					countenable++
+		connections := nil
+		connsMap := make(map[string]*ConnectionStatus, countDefault)
+		for _, conn := range connsDefault {
+			status := ConnectionStatus{
+				Connection: conn,
+				isAlive:    false,
+			}
+			append(connections, status)
+			connsMap[conn] = &status
+		}
+		for _, conn := range connsAll {
+			if status, isDefault := connsMap[conn]; isDefault {
+				// FIXME: No need to check if there is no repetition
+				if !status.isAlive {
+					status.isAlive = true
+					totalAlive += 1
+					totalOffline -= 1
 				}
 			}
 		}
 
-		resp := &InfoResponse{
-			StatusListEnable:       enable,
-			DefaultConnectionCount: defaultconnectionCount,
-			OpenConnectionCount:    connectionCount,
-		}
-
-		fmt.Println(resp)
-
-		if resp == nil {
-			wh.Error404(w)
-			return
+		resp := &ConnectionsHealth{
+			Count:        countDefault,
+			TotalAlive:   totalAlive,
+			TotalOffline: totalOffline,
+			Connections:  connections,
 		}
 
 		wh.SendJSONOr500(logger, w, &resp)
-
 	}
 }

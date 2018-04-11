@@ -8,17 +8,59 @@ import (
 	wh "github.com/skycoin/skycoin/src/util/http" //http,json helpers
 )
 
-// Status encapsulates useful information from the ...
-type Status struct {
-	address string `json:"ip:port"`
-	status  bool   `json:"is_conections"`
+// ConnectionStatus structs
+type ConnectionStatus struct {
+	Connection string `json:"Connection"`
+	IsAlive    bool   `json:"Status"`
 }
 
-// InfoResponse encapsulates useful information from the ...
-type InfoResponse struct {
-	StatusList             []Status `json:"list_status"`
-	DefaultConnectionCount int      `json:"default_connection_count"`
-	OpenConnectionCount    int      `json:"open_connection_count"`
+// ConnectionsHealth struct
+type ConnectionsHealth struct {
+	Count        int                `json:"count"`
+	TotalAlive   int                `json:"total_alive"`
+	TotalOffline int                `json:"total_offline"`
+	Connections  []ConnectionStatus `json:IsAlive`
+}
+
+func defaultStatus(gateway Gatewayer) ConnectionsHealth {
+
+	connsDefault := gateway.GetDefaultConnections()
+	sort.Strings(connsDefault)
+	connsAll := gateway.GetConnections().Connections
+
+	countDefault, totalAlive := len(connsDefault), 0
+	totalOffline := countDefault
+
+	var connections []ConnectionStatus
+	connsMap := make(map[string]*ConnectionStatus, countDefault)
+	for _, conn := range connsDefault {
+
+		status := ConnectionStatus{
+			Connection: conn,
+			IsAlive:    false,
+		}
+		connections = append(connections, status)
+		connsMap[conn] = &status
+	}
+
+	for _, conn := range connsAll {
+		if status, isDefault := connsMap[conn.Addr]; isDefault {
+			if !status.IsAlive {
+				status.IsAlive = true
+				totalAlive++
+				totalOffline--
+			}
+		}
+	}
+
+	resp := ConnectionsHealth{
+		Count:        countDefault,
+		TotalAlive:   totalAlive,
+		TotalOffline: totalOffline,
+		Connections:  connections,
+	}
+
+	return resp
 }
 
 func connectionHandler(gateway Gatewayer) http.HandlerFunc {
@@ -97,32 +139,15 @@ func exchgConnectionsHandler(gateway Gatewayer) http.HandlerFunc {
 	}
 }
 
-// TODO Function to obtain the issue info # 1049
-func infoHandler(gateway Gatewayer) http.HandlerFunc {
+func defaultStatusHandler(gateway Gatewayer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			wh.Error405(w)
 			return
 		}
-
-		listdefault := gateway.GetDefaultConnections()
-		listconnections := gateway.GetConnections().Connections
-
-		connectionCount := len(listconnections)
-		defaultconnectionCount := len(listdefault)
-		list := make([]Status, defaultconnectionCount, defaultconnectionCount+1)
-
-		resp := &InfoResponse{
-			StatusList:             list,
-			DefaultConnectionCount: defaultconnectionCount,
-			OpenConnectionCount:    connectionCount,
-		}
-
-		if resp == nil {
-			wh.Error404(w)
-			return
-		}
+		resp := defaultStatus(gateway)
 
 		wh.SendJSONOr500(logger, w, &resp)
+
 	}
 }

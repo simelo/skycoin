@@ -8,11 +8,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Add `/network/connections/default` endpoint
+- Logging migration, now powered by [logrus](https://github.com/sirupsen/logrus)
+- Write specification for skycoin URIs (based upon bip21)
+- Implemented `scrypt-chacha20poly1305` for wallet encryption
+- Implemented `sha256xor` for wallet encryption
+- Add new field of `secrets` to wallet, which records all encrypted sensitive data like seed, public/private keys.
+
 ### Fixed
 
 ### Changed
 
+- `-launch-browser` is set to false by default
+
 ### Removed
+
+- Remove dependency [op/go-logging](https://github.com/op/go-logging)
 
 ## [0.22.0] - 2018-03-20
 

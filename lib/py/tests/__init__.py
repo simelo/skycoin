@@ -1,0 +1,4 @@
+
+"""PySkycoin test suite.
+"""
+

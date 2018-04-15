@@ -23,7 +23,7 @@ $ make build-libc
 In order to test the C client libraries follow these steps
 
 - Install [Criterion](https://github.com/Snaipe/Criterion)
-  * locally by executing `make instal-deps-libc` command
+  * locally by executing `make install-deps-libc` command
   * or by [installing Criterion system-wide](https://github.com/Snaipe/Criterion#packages)
 - Run `make test-libc` command
 

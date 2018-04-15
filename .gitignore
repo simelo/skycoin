@@ -123,3 +123,17 @@ skycoin-cli
 # FIXME: see #1027 - Temporary solution to deal with generated file
 include/libskycoin.h
 
+# Python general things to ignore
+lib/py/build/
+lib/py/dist/
+*.egg-info/
+*.egg
+*.py[cod]
+__pycache__/
+*.so
+*~
+
+# due to using tox and pytest
+.tox
+.cache
+

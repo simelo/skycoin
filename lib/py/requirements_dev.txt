@@ -1,0 +1,6 @@
+
+pygccxml
+pybindgen==0.18.0
+py.test
+tox
+

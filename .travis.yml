@@ -8,9 +8,23 @@ go:
 matrix:
   include:
     - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+      env:
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
     - os: osx
       # Do not start osx build for PR
       if: type != pull_request
+      osx_image: xcode8
+      env:
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+
+before_install:
+  - eval "${MATRIX_EVAL}"
 
 env:
   global:
@@ -49,9 +63,9 @@ script:
   # stable integration tests
   - make integration-test-stable
   # libskycoin tests
-  - make test-libc
+  - CC=gcc-6 make test-libc
   # TODO: test pyskycoin
-  # - make test-libpy
+  # - CC=gcc-6 make test-libpy
   # build wallets
   - if [[ "$TRAVIS_PULL_REQUEST" == false ]]; then ./ci-scripts/build-wallet.sh; fi
 

@@ -1,6 +1,6 @@
 
-pygccxml
 pybindgen==0.18.0
-py.test
-tox
+pygccxml==1.8.6
+pytest==3.5.0
+tox==3.0.0
 

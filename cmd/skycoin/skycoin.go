@@ -169,8 +169,6 @@ type Config struct {
 	Arbitrating  bool
 	RPCThreadNum uint // rpc number
 	Logtofile    bool
-	Logtogui     bool
-	LogBuffSize  int
 }
 
 func (c *Config) register() {
@@ -230,8 +228,6 @@ func (c *Config) register() {
 	flag.DurationVar(&c.OutgoingConnectionsRate, "connection-rate", c.OutgoingConnectionsRate, "How often to make an outgoing connection")
 	flag.BoolVar(&c.LocalhostOnly, "localhost-only", c.LocalhostOnly, "Run on localhost and only connect to localhost peers")
 	flag.BoolVar(&c.Arbitrating, "arbitrating", c.Arbitrating, "Run node in arbitrating mode")
-	flag.BoolVar(&c.Logtogui, "logtogui", true, "log to gui")
-	flag.IntVar(&c.LogBuffSize, "logbufsize", c.LogBuffSize, "Log size saved in memeory for gui show")
 	flag.StringVar(&c.WalletCryptoType, "wallet-crypto-type", c.WalletCryptoType, "wallet crypto type. Can be sha256-xor or scrypt-chacha20poly1305")
 }
 
@@ -321,7 +317,6 @@ var devConfig = Config{
 	// Will force it to connect to this ip:port, instead of waiting for it
 	// to show up as a peer
 	ConnectTo:   "",
-	LogBuffSize: 8388608, //1024*1024*8
 }
 
 // Parse prepare the config
@@ -632,31 +627,6 @@ func Run(c *Config) {
 			return
 		}
 	}
-
-	// POTENTIALLY UNSAFE CODE -- See https://github.com/skycoin/skycoin/issues/838
-	// closelog, err := initLogging(c.DataDirectory, c.LogLevel, c.ColorLog, c.Logtofile, c.Logtogui, &d.LogBuff)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// if c.Logtogui {
-	// 	go func(buf *bytes.Buffer, quit chan struct{}) {
-	// 		for {
-	// 			select {
-	// 			case <-quit:
-	// 				logger.Info("Logbuff service closed normally")
-	// 				return
-	// 			case <-time.After(1 * time.Second): //insure logbuff size not exceed required size, like lru
-	// 				for buf.Len() > c.LogBuffSize {
-	// 					_, err := buf.ReadString(byte('\n')) //discard one line
-	// 					if err != nil {
-	// 						continue
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 	}(&d.LogBuff, quit)
-	// }
 
 	errC := make(chan error, 10)
 

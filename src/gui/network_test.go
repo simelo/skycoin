@@ -68,7 +68,7 @@ func TestConnection(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			endpoint := "/network/connection"
+			endpoint := "/v1/network/connection"
 			gateway := NewGatewayerMock()
 			gateway.On("GetConnection", tc.addr).Return(tc.gatewayGetConnectionResult)
 			v := url.Values{}
@@ -153,7 +153,7 @@ func TestConnections(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			endpoint := "/network/connections"
+			endpoint := "/v1/network/connections"
 			gateway := NewGatewayerMock()
 			gateway.On("GetConnections").Return(tc.gatewayGetConnectionsResult)
 			req, err := http.NewRequest(tc.method, endpoint, nil)
@@ -205,7 +205,7 @@ func TestDefaultConnections(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			endpoint := "/network/defaultConnections"
+			endpoint := "/v1/network/defaultConnections"
 			gateway := NewGatewayerMock()
 			gateway.On("GetDefaultConnections").Return(tc.gatewayGetDefaultConnectionsResult)
 			req, err := http.NewRequest(tc.method, endpoint, nil)
@@ -257,7 +257,7 @@ func TestGetTrustConnections(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			endpoint := "/network/connections/trust"
+			endpoint := "/v1/network/connections/trust"
 			gateway := NewGatewayerMock()
 			gateway.On("GetTrustConnections").Return(tc.gatewayGetTrustConnectionsResult)
 			req, err := http.NewRequest(tc.method, endpoint, nil)
@@ -309,7 +309,7 @@ func TestGetExchgConnection(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			endpoint := "/network/connections/exchange"
+			endpoint := "/v1/network/connections/exchange"
 			gateway := NewGatewayerMock()
 			gateway.On("GetExchgConnection").Return(tc.gatewayGetExchgConnectionResult)
 			req, err := http.NewRequest(tc.method, endpoint, nil)

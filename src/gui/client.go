@@ -54,7 +54,7 @@ func NewClient(addr string) *Client {
 		Transport: transport,
 		Timeout:   httpClientTimeout,
 	}
-	addr = strings.TrimRight(addr, "/v1")
+	addr = strings.TrimRight(addr, "/")
 	addr += "/"
 
 	return &Client{
@@ -94,10 +94,8 @@ func (c *Client) Get(endpoint string, obj interface{}) error {
 
 // get makes a GET request to an endpoint. Caller must close response body.
 func (c *Client) get(endpoint string) (*http.Response, error) {
-	endpoint = "/v1/" + endpoint
-	endpoint = strings.TrimLeft(endpoint, "/")
-	endpoint = c.Addr + endpoint
 
+	endpoint = c.Addr + "v1" + endpoint
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -127,9 +125,7 @@ func (c *Client) post(endpoint string, contentType string, body io.Reader, obj i
 	if err != nil {
 		return err
 	}
-	endpoint = "/v1" + endpoint
-	endpoint = strings.TrimLeft(endpoint, "/")
-	endpoint = c.Addr + endpoint
+	endpoint = c.Addr + "v1" + endpoint
 
 	req, err := http.NewRequest(http.MethodPost, endpoint, body)
 	if err != nil {

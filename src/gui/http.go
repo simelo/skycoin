@@ -227,7 +227,7 @@ func newServerMux(c muxConfig, gateway Gatewayer, csrfStore *CSRFStore, rpc *web
 	}
 
 	if c.enableJSON20RPC {
-		webHandler("/webrpc", http.HandlerFunc(rpc.Handler))
+		webHandlerAPI("/webrpc", http.HandlerFunc(rpc.Handler), true)
 	}
 
 	// get the current CSRF token

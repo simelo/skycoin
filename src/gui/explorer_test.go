@@ -232,7 +232,7 @@ func TestGetTransactionsForAddress(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			endpoint := "/explorer/address"
+			endpoint := "/v1/explorer/address"
 			gateway := NewGatewayerMock()
 			gateway.On("GetAddressTxns", address).Return(tc.gatewayGetAddressTxnsResult, tc.gatewayGetAddressTxnsErr)
 			gateway.On("GetUxOutByID", tc.gatewayGetUxOutByIDArg).Return(tc.gatewayGetUxOutByIDResult, tc.gatewayGetUxOutByIDErr)
@@ -363,7 +363,7 @@ func TestCoinSupply(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			endpoint := "/coinSupply"
+			endpoint := "/v1/coinSupply"
 			gateway := NewGatewayerMock()
 			gateway.On("GetUnspentOutputs", mock.Anything).Return(tc.gatewayGetUnspentOutputsResult, tc.gatewayGetUnspentOutputsErr)
 
@@ -575,7 +575,7 @@ func TestGetRichlist(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			endpoint := "/richlist"
+			endpoint := "/v1/richlist"
 			gateway := NewGatewayerMock()
 			gateway.On("GetRichlist", tc.includeDistribution).Return(tc.gatewayGetRichlistResult, tc.gatewayGetRichlistErr)
 
@@ -663,7 +663,7 @@ func TestGetAddressCount(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			endpoint := "/addresscount"
+			endpoint := "/v1/addresscount"
 			gateway := NewGatewayerMock()
 			gateway.On("GetAddressCount").Return(tc.gatewayGetAddressCountResult, tc.gatewayGetAddressCountErr)
 

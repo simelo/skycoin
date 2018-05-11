@@ -49,46 +49,46 @@ func setCSRFParameters(csrfStore *CSRFStore, tokenType string, req *http.Request
 }
 
 var endpoints = []string{
-	"/address_uxouts",
-	"/addresscount",
-	"/balance",
-	"/block",
-	"/blockchain/metadata",
-	"/blockchain/progress",
-	"/blocks",
-	"/coinSupply",
-	"/explorer/address",
-	"/health",
-	"/injectTransaction",
-	"/last_blocks",
-	"/version",
-	"/network/connection",
-	"/network/connections",
-	"/network/connections/exchange",
-	"/network/connections/trust",
-	"/network/defaultConnections",
-	"/outputs",
-	"/pendingTxs",
-	"/rawtx",
-	"/richlist",
-	"/resendUnconfirmedTxns",
-	"/transaction",
-	"/transactions",
-	"/uxout",
-	"/wallet",
-	"/wallet/balance",
-	"/wallet/create",
-	"/wallet/newAddress",
-	"/wallet/newSeed",
-	"/wallet/seed",
-	"/wallet/spend",
-	"/wallet/transaction",
-	"/wallet/transactions",
-	"/wallet/unload",
-	"/wallet/update",
-	"/wallets",
-	"/wallets/folderName",
-	"/webrpc",
+	"/v1/address_uxouts",
+	"/v1/addresscount",
+	"/v1/balance",
+	"/v1/block",
+	"/v1/blockchain/metadata",
+	"/v1/blockchain/progress",
+	"/v1/blocks",
+	"/v1/coinSupply",
+	"/v1/explorer/address",
+	"/v1/health",
+	"/v1/injectTransaction",
+	"/v1/last_blocks",
+	"/v1/version",
+	"/v1/network/connection",
+	"/v1/network/connections",
+	"/v1/network/connections/exchange",
+	"/v1/network/connections/trust",
+	"/v1/network/defaultConnections",
+	"/v1/outputs",
+	"/v1/pendingTxs",
+	"/v1/rawtx",
+	"/v1/richlist",
+	"/v1/resendUnconfirmedTxns",
+	"/v1/transaction",
+	"/v1/transactions",
+	"/v1/uxout",
+	"/v1/wallet",
+	"/v1/wallet/balance",
+	"/v1/wallet/create",
+	"/v1/wallet/newAddress",
+	"/v1/wallet/newSeed",
+	"/v1/wallet/seed",
+	"/v1/wallet/spend",
+	"/v1/wallet/transaction",
+	"/v1/wallet/transactions",
+	"/v1/wallet/unload",
+	"/v1/wallet/update",
+	"/v1/wallets",
+	"/v1/wallets/folderName",
+	"/v1/webrpc",
 }
 
 func TestCSRFWrapper(t *testing.T) {
@@ -222,7 +222,7 @@ func TestCSRF(t *testing.T) {
 		gateway := &GatewayerMock{}
 		gateway.On("UpdateWalletLabel", "fooid", "foolabel").Return(nil)
 
-		endpoint := "/wallet/update"
+		endpoint := "/v1/wallet/update"
 
 		v := url.Values{}
 		v.Add("id", "fooid")
@@ -258,7 +258,7 @@ func TestCSRF(t *testing.T) {
 	handler := newServerMux(muxConfig{host: configuredHost, appLoc: "."}, gateway, csrfStore, nil)
 
 	// non-GET request to /csrf is invalid
-	req, err := http.NewRequest(http.MethodPost, "/csrf", nil)
+	req, err := http.NewRequest(http.MethodPost, "/v1/csrf", nil)
 	require.NoError(t, err)
 
 	rr = httptest.NewRecorder()
@@ -270,7 +270,7 @@ func TestCSRF(t *testing.T) {
 	// CSRF disabled 404s
 	csrfStore.Enabled = false
 
-	req, err = http.NewRequest(http.MethodGet, "/csrf", nil)
+	req, err = http.NewRequest(http.MethodGet, "/v1/csrf", nil)
 	require.NoError(t, err)
 
 	rr = httptest.NewRecorder()
@@ -282,7 +282,7 @@ func TestCSRF(t *testing.T) {
 	csrfStore.Enabled = true
 
 	// Request a CSRF token, use it in a request
-	req, err = http.NewRequest(http.MethodGet, "/csrf", nil)
+	req, err = http.NewRequest(http.MethodGet, "/v1/csrf", nil)
 	require.NoError(t, err)
 
 	rr = httptest.NewRecorder()
@@ -297,7 +297,7 @@ func TestCSRF(t *testing.T) {
 	token := msg["csrf_token"]
 	require.NotEmpty(t, token)
 
-	req, err = http.NewRequest(http.MethodPost, "/version", nil)
+	req, err = http.NewRequest(http.MethodPost, "/v1/version", nil)
 	require.NoError(t, err)
 
 	rr = httptest.NewRecorder()
@@ -309,7 +309,7 @@ func TestCSRF(t *testing.T) {
 
 	// Make another call to /csrf, this will invalidate the first token
 	// Request a CSRF token, use it in a request
-	req, err = http.NewRequest(http.MethodGet, "/csrf", nil)
+	req, err = http.NewRequest(http.MethodGet, "/v1/csrf", nil)
 	require.NoError(t, err)
 
 	rr = httptest.NewRecorder()

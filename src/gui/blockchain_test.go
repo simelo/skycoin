@@ -190,7 +190,7 @@ func TestGetBlock(t *testing.T) {
 			gateway.On("GetBlockByHash", tc.sha256).Return(tc.gatewayGetBlockByHashResult, tc.gatewayGetBlockByHashExists)
 			gateway.On("GetBlockBySeq", tc.seq).Return(tc.gatewayGetBlockBySeqResult, tc.gatewayGetBlockBySeqExists)
 
-			endpoint := "/block"
+			endpoint := "/v1/block"
 
 			v := url.Values{}
 			if tc.hash != "" {
@@ -306,8 +306,8 @@ func TestGetBlocks(t *testing.T) {
 			},
 			start: 1,
 			end:   3,
-			gatewayGetBlocksResult: &visor.ReadableBlocks{Blocks: []visor.ReadableBlock{visor.ReadableBlock{}}},
-			response:               &visor.ReadableBlocks{Blocks: []visor.ReadableBlock{visor.ReadableBlock{}}},
+			gatewayGetBlocksResult: &visor.ReadableBlocks{Blocks: []visor.ReadableBlock{{}}},
+			response:               &visor.ReadableBlocks{Blocks: []visor.ReadableBlock{{}}},
 		},
 	}
 
@@ -316,7 +316,7 @@ func TestGetBlocks(t *testing.T) {
 			gateway := &GatewayerMock{}
 			gateway.On("GetBlocks", tc.start, tc.end).Return(tc.gatewayGetBlocksResult, tc.gatewayGetBlocksError)
 
-			endpoint := "/blocks"
+			endpoint := "/v1/blocks"
 
 			v := url.Values{}
 			if tc.body != nil {
@@ -427,7 +427,7 @@ func TestGetLastBlocks(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			endpoint := "/last_blocks"
+			endpoint := "/v1/last_blocks"
 			gateway := NewGatewayerMock()
 
 			gateway.On("GetLastBlocks", tc.num).Return(tc.gatewayGetLastBlocksResult, tc.gatewayGetLastBlocksError)

@@ -107,7 +107,7 @@ func (c *Client) Do(obj interface{}, method string, params interface{}) error {
 
 // CSRF returns a CSRF token. If CSRF is disabled on the node, returns an empty string and nil error.
 func (c *Client) CSRF() (string, error) {
-	endpoint := c.Addr + "csrf"
+	endpoint := c.Addr + "v1/csrf"
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return "", err
@@ -250,7 +250,7 @@ func do(httpClient *http.Client, rpcReq *Request, rpcAddress, csrf string) (*Res
 		return nil, err
 	}
 
-	url := rpcAddress + "webrpc"
+	url := rpcAddress + "v1/webrpc"
 	body := bytes.NewBuffer(d)
 	req, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {

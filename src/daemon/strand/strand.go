@@ -10,7 +10,7 @@ const (
 	// logDurationThreshold is how long to wait before reporting a function call's time
 	logDurationThreshold = time.Millisecond * 100
 	// writeWait is how long to wait to write to a request channel before logging the delay
-	logQueueRequestWaitThreshold = time.Second * 3
+	logQueueRequestWaitThreshold = time.Second * 1
 )
 
 var (
@@ -32,7 +32,7 @@ type Request struct {
 // channel closes.
 func Strand(logger *logging.Logger, c chan Request, name string, f func() error, quit chan struct{}, quitErr error) error {
 	if Debug {
-		logger.Debug("Strand precall %s", name)
+		logger.Debugf("Strand precall %s", name)
 	}
 
 	done := make(chan struct{})
@@ -44,7 +44,7 @@ func Strand(logger *logging.Logger, c chan Request, name string, f func() error,
 			defer close(done)
 
 			// TODO: record time statistics in a data structure and expose stats via an API
-			// logger.Debug("%s begin", name)
+			// logger.Debugf("%s begin", name)
 
 			t := time.Now()
 
@@ -63,32 +63,32 @@ func Strand(logger *logging.Logger, c chan Request, name string, f func() error,
 					case <-done:
 						return
 					case <-t.C:
-						logger.Warning("%s is taking longer than %s", name, threshold)
+						logger.Warningf("%s is taking longer than %s", name, threshold)
 						threshold *= 10
 						t.Reset(threshold)
 					}
 					t1 := time.Now()
-					logger.Info("ELAPSED: %s", t1.Sub(t0))
+					logger.Infof("ELAPSED: %s", t1.Sub(t0))
 				}
 			}()
 
 			if Debug {
-				logger.Debug("Stranding %s", name)
+				logger.Debugf("Stranding %s", name)
 			}
 
 			err = f()
 
 			// Log the error here so that the Request channel consumer doesn't need to
 			if err != nil {
-				logger.Error("%s error: %v", name, err)
+				logger.Errorf("%s error: %v", name, err)
 			}
 
 			// Notify us if the function call took too long
 			elapsed := time.Now().Sub(t)
 			if elapsed > logDurationThreshold {
-				logger.Warning("%s took %s", name, elapsed)
+				logger.Warningf("%s took %s", name, elapsed)
 			} else {
-				//logger.Debug("%s took %s", name, elapsed)
+				//logger.Debugf("%s took %s", name, elapsed)
 			}
 
 			return err
@@ -96,6 +96,7 @@ func Strand(logger *logging.Logger, c chan Request, name string, f func() error,
 	}
 
 	// Log a message if waiting too long to write due to a full queue
+	t := time.Now()
 loop:
 	for {
 		select {
@@ -104,14 +105,19 @@ loop:
 		case c <- req:
 			break loop
 		case <-time.After(logQueueRequestWaitThreshold):
-			logger.Warning("Waited %s while trying to write %s to the strand request channel", logQueueRequestWaitThreshold, req.Name)
+			logger.Warningf("Waited %s while trying to write %s to the strand request channel", time.Now().Sub(t), req.Name)
 		}
 	}
 
-	select {
-	case <-quit:
-		return quitErr
-	case <-done:
-		return err
+	t = time.Now()
+	for {
+		select {
+		case <-quit:
+			return quitErr
+		case <-done:
+			return err
+		case <-time.After(logQueueRequestWaitThreshold):
+			logger.Warningf("Waited %s while waiting for %s to be done or quit", time.Now().Sub(t), req.Name)
+		}
 	}
 }

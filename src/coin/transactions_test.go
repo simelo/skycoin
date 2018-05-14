@@ -13,9 +13,10 @@ import (
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"github.com/skycoin/skycoin/src/testutil"
+	_require "github.com/skycoin/skycoin/src/testutil/require"
 )
 
-func makeTransactionFromUxOut(t *testing.T, ux UxOut, s cipher.SecKey) Transaction {
+func makeTransactionFromUxOut(ux UxOut, s cipher.SecKey) Transaction {
 	tx := Transaction{}
 	tx.PushInput(ux.Hash())
 	tx.PushOutput(makeAddress(), 1e6, 50)
@@ -27,10 +28,10 @@ func makeTransactionFromUxOut(t *testing.T, ux UxOut, s cipher.SecKey) Transacti
 
 func makeTransaction(t *testing.T) Transaction {
 	ux, s := makeUxOutWithSecret(t)
-	return makeTransactionFromUxOut(t, ux, s)
+	return makeTransactionFromUxOut(ux, s)
 }
 
-func makeTransactions(t *testing.T, n int) Transactions {
+func makeTransactions(t *testing.T, n int) Transactions { // nolint: unparam
 	txns := make(Transactions, n)
 	for i := range txns {
 		txns[i] = makeTransaction(t)
@@ -93,7 +94,7 @@ func TestTransactionVerify(t *testing.T) {
 
 	// Duplicate inputs
 	ux, s := makeUxOutWithSecret(t)
-	tx = makeTransactionFromUxOut(t, ux, s)
+	tx = makeTransactionFromUxOut(ux, s)
 	tx.PushInput(tx.In[0])
 	tx.Sigs = nil
 	tx.SignInputs([]cipher.SecKey{s, s})
@@ -149,56 +150,56 @@ func TestTransactionVerify(t *testing.T) {
 func TestTransactionVerifyInput(t *testing.T) {
 	// Invalid uxIn args
 	tx := makeTransaction(t)
-	require.PanicsWithValue(t, "tx.In != uxIn", func() {
+	_require.PanicsWithLogMessage(t, "tx.In != uxIn", func() {
 		tx.VerifyInput(nil)
 	})
-	require.PanicsWithValue(t, "tx.In != uxIn", func() {
+	_require.PanicsWithLogMessage(t, "tx.In != uxIn", func() {
 		tx.VerifyInput(UxArray{})
 	})
-	require.PanicsWithValue(t, "tx.In != uxIn", func() {
+	_require.PanicsWithLogMessage(t, "tx.In != uxIn", func() {
 		tx.VerifyInput(make(UxArray, 3))
 	})
 
 	// tx.In != tx.Sigs
 	ux, s := makeUxOutWithSecret(t)
-	tx = makeTransactionFromUxOut(t, ux, s)
+	tx = makeTransactionFromUxOut(ux, s)
 	tx.Sigs = []cipher.Sig{}
-	require.PanicsWithValue(t, "tx.In != tx.Sigs", func() {
+	_require.PanicsWithLogMessage(t, "tx.In != tx.Sigs", func() {
 		tx.VerifyInput(UxArray{ux})
 	})
 
 	ux, s = makeUxOutWithSecret(t)
-	tx = makeTransactionFromUxOut(t, ux, s)
+	tx = makeTransactionFromUxOut(ux, s)
 	tx.Sigs = append(tx.Sigs, cipher.Sig{})
-	require.PanicsWithValue(t, "tx.In != tx.Sigs", func() {
+	_require.PanicsWithLogMessage(t, "tx.In != tx.Sigs", func() {
 		tx.VerifyInput(UxArray{ux})
 	})
 
 	// tx.InnerHash != tx.HashInner()
 	ux, s = makeUxOutWithSecret(t)
-	tx = makeTransactionFromUxOut(t, ux, s)
+	tx = makeTransactionFromUxOut(ux, s)
 	tx.InnerHash = cipher.SHA256{}
-	require.PanicsWithValue(t, "Invalid Tx Inner Hash", func() {
+	_require.PanicsWithLogMessage(t, "Invalid Tx Inner Hash", func() {
 		tx.VerifyInput(UxArray{ux})
 	})
 
 	// tx.In does not match uxIn hashes
 	ux, s = makeUxOutWithSecret(t)
-	tx = makeTransactionFromUxOut(t, ux, s)
-	require.PanicsWithValue(t, "Ux hash mismatch", func() {
+	tx = makeTransactionFromUxOut(ux, s)
+	_require.PanicsWithLogMessage(t, "Ux hash mismatch", func() {
 		tx.VerifyInput(UxArray{UxOut{}})
 	})
 
 	// Invalid signature
 	ux, s = makeUxOutWithSecret(t)
-	tx = makeTransactionFromUxOut(t, ux, s)
+	tx = makeTransactionFromUxOut(ux, s)
 	tx.Sigs[0] = cipher.Sig{}
 	err := tx.VerifyInput(UxArray{ux})
 	testutil.RequireError(t, err, "Signature not valid for output being spent")
 
 	// Valid
 	ux, s = makeUxOutWithSecret(t)
-	tx = makeTransactionFromUxOut(t, ux, s)
+	tx = makeTransactionFromUxOut(ux, s)
 	err = tx.VerifyInput(UxArray{ux})
 	require.NoError(t, err)
 }
@@ -949,31 +950,4 @@ func TestSortTransactions(t *testing.T) {
 			require.Equal(t, tc.sortedTxns, txns)
 		})
 	}
-}
-
-func TestAddUint64(t *testing.T) {
-	n, err := AddUint64(10, 11)
-	require.NoError(t, err)
-	require.Equal(t, uint64(21), n)
-
-	_, err = AddUint64(math.MaxUint64, 1)
-	require.Error(t, err)
-}
-
-func TestAddUint32(t *testing.T) {
-	n, err := addUint32(10, 11)
-	require.NoError(t, err)
-	require.Equal(t, uint32(21), n)
-
-	_, err = addUint32(math.MaxUint32, 1)
-	require.Error(t, err)
-}
-
-func TestMultUint64(t *testing.T) {
-	n, err := multUint64(10, 11)
-	require.NoError(t, err)
-	require.Equal(t, uint64(110), n)
-
-	_, err = multUint64(math.MaxUint64/2, 3)
-	require.Error(t, err)
 }

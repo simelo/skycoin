@@ -1,7 +1,8 @@
 package daemon
 
 import (
-	"github.com/skycoin/skycoin/src/cipher"
+	"sort"
+	"strings"
 )
 
 // Connection a connection's state within the daemon
@@ -53,7 +54,7 @@ func (rpc RPC) GetConnection(d *Daemon, addr string) *Connection {
 
 	c, err := d.Pool.Pool.GetConnection(addr)
 	if err != nil {
-		logger.Error("%v", err)
+		logger.Error(err)
 		return nil
 	}
 
@@ -86,14 +87,14 @@ func (rpc RPC) GetConnections(d *Daemon) *Connections {
 
 	l, err := d.Pool.Pool.Size()
 	if err != nil {
-		logger.Error("%v", err)
+		logger.Error(err)
 		return nil
 	}
 
 	conns := make([]*Connection, 0, l)
 	cs, err := d.Pool.Pool.GetConnections()
 	if err != nil {
-		logger.Error("%v", err)
+		logger.Error(err)
 		return nil
 	}
 
@@ -105,6 +106,12 @@ func (rpc RPC) GetConnections(d *Daemon) *Connections {
 			}
 		}
 	}
+
+	// Sort connnections by IP address
+	sort.Slice(conns, func(i, j int) bool {
+		return strings.Compare(conns[i].Addr, conns[j].Addr) < 0
+	})
+
 	return &Connections{Connections: conns}
 }
 
@@ -124,14 +131,24 @@ func (rpc RPC) GetAllExchgConnections(d *Daemon) []string {
 }
 
 // GetBlockchainProgress gets the blockchain progress
-func (rpc RPC) GetBlockchainProgress(v *Visor) *BlockchainProgress {
+func (rpc RPC) GetBlockchainProgress(v *Visor) (*BlockchainProgress, error) {
 	if v.v == nil {
-		return nil
+		return nil, nil
+	}
+
+	current, _, err := v.HeadBkSeq()
+	if err != nil {
+		return nil, err
+	}
+
+	highest, err := v.EstimateBlockchainHeight()
+	if err != nil {
+		return nil, err
 	}
 
 	bp := &BlockchainProgress{
-		Current: v.HeadBkSeq(),
-		Highest: v.EstimateBlockchainHeight(),
+		Current: current,
+		Highest: highest,
 	}
 
 	peerHeights := v.GetPeerBlockchainHeights()
@@ -146,27 +163,22 @@ func (rpc RPC) GetBlockchainProgress(v *Visor) *BlockchainProgress {
 		})
 	}
 
-	return bp
-}
-
-// ResendTransaction rebroadcast transaction
-func (rpc RPC) ResendTransaction(v *Visor, p *Pool, txHash cipher.SHA256) *ResendResult {
-	if v.v == nil {
-		return nil
-	}
-	v.ResendTransaction(txHash, p)
-	return &ResendResult{}
+	return bp, nil
 }
 
 // ResendUnconfirmedTxns rebroadcast unconfirmed transactions
-func (rpc RPC) ResendUnconfirmedTxns(v *Visor, p *Pool) *ResendResult {
+func (rpc RPC) ResendUnconfirmedTxns(v *Visor, p *Pool) (*ResendResult, error) {
 	if v.v == nil {
-		return nil
+		return nil, nil
 	}
-	txids := v.ResendUnconfirmedTxns(p)
+	txids, err := v.ResendUnconfirmedTxns(p)
+	if err != nil {
+		return nil, err
+	}
+
 	var rlt ResendResult
 	for _, txid := range txids {
 		rlt.Txids = append(rlt.Txids, txid.Hex())
 	}
-	return &rlt
+	return &rlt, nil
 }

@@ -21,10 +21,10 @@
 }
 
 
-%apply Handle { Wallet__Handle, Options__Handle, ReadableEntry__Handle, ReadableWallet__Handle, WebRpcClient__Handle, 
+%apply Handle { Wallet__Handle, Options__Handle, ReadableEntry__Handle, ReadableWallet__Handle, WebRpcClient__Handle,
 	WalletResponse__Handle, Client__Handle, Strings__Handle, Wallets__Handle, Config__Handle, App__Handle, Context__Handle,
-	GoStringMap_} 
+	GoStringMap, PasswordReader__Handle_}
 
 %apply Handle* { Wallet__Handle*, Options__Handle*, ReadableEntry__Handle*, ReadableWallet__Handle*, WebRpcClient__Handle*,
 	WalletResponse__Handle*, Client__Handle*, Strings__Handle*, Wallets__Handle*, Config__Handle*,
-	App__Handle*, Context__Handle*, GoStringMap_* } 
+	App__Handle*, Context__Handle*, GoStringMap_*, PasswordReader__Handle* }

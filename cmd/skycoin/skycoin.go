@@ -30,8 +30,7 @@ var (
 	BlockchainPubkeyStr = "0328c576d3f420e7682058a981173a4b374c7cc5ff55bf394d3cf57059bbe6456a"
 	// BlockchainSeckeyStr empty private key string
 	BlockchainSeckeyStr = ""
-	// Name of the file containing trusted peer list (one-by-line)
-	// TrustedPeerlistFileName name of file under data dir including default connections for local testnet
+	// TrustedPeerlistFileName name of file under data dir including default connections for local testnet (one-by-line)
 	TrustedPeerlistFileName = "connections.txt"
 	// GenesisTimestamp genesis block create unix time
 	GenesisTimestamp uint64 = 1426562704

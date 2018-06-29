@@ -32,11 +32,11 @@ var (
 	BlockchainSeckeyStr = ""
 	// TrustedPeerlistFileName name of file under data dir including default connections for local testnet (one-by-line)
 	TrustedPeerlistFileName = "connections.txt"
+
 	// GenesisTimestamp genesis block create unix time
 	GenesisTimestamp uint64 = 1426562704
 	// GenesisCoinVolume represents the coin capacity
 	GenesisCoinVolume uint64 = 100e12
-
 	// DefaultConnections the default trust node addresses
 	DefaultConnections = []string{
 		"118.178.135.93:6000",
@@ -49,7 +49,6 @@ var (
 		"139.162.7.132:6000",
 	}
 )
-
 func main() {
 	// get node config
 	nodeConfig := skycoin.NewNodeConfig(ConfigMode, skycoin.NodeParameters{

@@ -36,6 +36,7 @@ install:
 build_script:
   - cd electron
   - yarn
+  - ps: [Console]::OutputEncoding = [Text.UTF8Encoding]::UTF8
   - ps: bash ./build.sh 'windows/amd64 windows/386' > $null
   - ps: ls release\
   - ps: cd ..

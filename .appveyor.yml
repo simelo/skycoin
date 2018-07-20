@@ -36,8 +36,7 @@ install:
 build_script:
   - cd electron
   - yarn
-  - ps: $ENV:PATH+=";c:\gopath\bin;c:\go\bin"
-  - ps: bash ./build.sh 'windows/amd64 windows/386' -Encoding UTF8
+  - ps: bash ./build.sh 'windows/amd64 windows/386' > $null
   - ps: ls release\
   - ps: cd ..
 

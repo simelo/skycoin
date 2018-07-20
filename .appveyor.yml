@@ -19,10 +19,10 @@ environment:
   GOX_OUTPUT: .gox_output
   APPVEYOR_RDP_PASSWORD: Aneroidsawq**2018
 
-cache:
-  - 'electron\node_modules'
-  - '%LOCALAPPDATA%\Yarn'
-  - '%USERPROFILE%\.electron'
+  #cache:
+  #- 'electron\node_modules'
+  #- '%LOCALAPPDATA%\Yarn'
+  #- '%USERPROFILE%\.electron'
 
 install:
   - echo %PATH%

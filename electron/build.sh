@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e -o pipefail
+#set -e -o pipefail
 
 # Builds both the electron and standalone releases
 

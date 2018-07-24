@@ -1,4 +1,5 @@
 image: Visual Studio 2017
+
 platform:
     - x64
 
@@ -8,11 +9,13 @@ branches:
   only:
     - master
 
-      #init:
-      # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-      #
-      #on_finish:
-      # - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+stack: go 1.10
+
+init:
+    - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
+on_finish:
+    - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 environment:
   GOPATH: c:\gopath
@@ -31,6 +34,7 @@ install:
     - cmd: go version
     - cmd: go env
     - cmd: go get github.com/gz-c/gox
+    - cmd: go get -t ./...
     - ps: Install-Product node 8 x64
     - ps: cd electron
     - cmd: npm install --global electron-builder

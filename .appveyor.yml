@@ -8,51 +8,51 @@ branches:
   only:
     - master
 
-init:
- - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-
-on_finish:
- - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+      #init:
+      # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+      #
+      #on_finish:
+      # - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 environment:
   GOPATH: c:\gopath
   GOX_OUTPUT: .gox_output
-  APPVEYOR_RDP_PASSWORD: Aneroidsawq**2018
+  #APPVEYOR_RDP_PASSWORD: Aneroidsawq**2018
 
-  #cache:
-  #- 'electron\node_modules'
-  #- '%LOCALAPPDATA%\Yarn'
-  #- '%USERPROFILE%\.electron'
+cache:
+    - 'electron\node_modules'
+    - '%LOCALAPPDATA%\Yarn'
+    - '%USERPROFILE%\.electron'
 
 install:
-  - echo %PATH%
-  - echo %GOPATH%
-  - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
-  - go version
-  - go env
-  - go get github.com/gz-c/gox
-  - ps: Install-Product node 8 x64
-  - ps: cd electron
-  - cmd: npm install --global electron-builder
-  - cmd: npm install --global electron-download
-  - cmd: npm install -g yarn
+    - cmd: echo %PATH%
+    - cmd: echo %GOPATH%
+    - cmd: set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
+    - cmd: go version
+    - cmd: go env
+    - cmd: go get github.com/gz-c/gox
+    - ps: Install-Product node 8 x64
+    - ps: cd electron
+    - cmd: npm install --global electron-builder
+    - cmd: npm install --global electron-download
+    - cmd: npm install -g yarn
 
 build_script:
-  - cd C:\gopath\src\github.com\skycoin\skycoin\electron
-  - yarn install
-  - cmd: bash ./build.sh "windows/amd64 windows/386"
-  - ps: ls release\
-  - ps: cd ..
+    - cmd: cd C:\gopath\src\github.com\skycoin\skycoin\electron
+    - cmd: yarn install
+    - cmd: bash ./build.sh "windows/amd64 windows/386"
+    - ps: ls release\
+    - ps: cd ..
 
 after_build:
-  - ps: 7z a skycoin.zip C:\gopath\src\github.com\skycoin\skycoin\electron\release\*
-  - ps: ls *.zip
+    - ps: 7z a skycoin.zip C:\gopath\src\github.com\skycoin\skycoin\electron\release\*
+    - ps: ls *.zip
 
 test: off
 
-#artifacts:
-#- path: skycoin.zip
-#name: published
+artifacts:
+    - path: skycoin.zip
+      name: published
 
     #deploy:
     #  provider: S3

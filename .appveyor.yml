@@ -32,11 +32,15 @@ install:
   - go env
   - go get github.com/gz-c/gox
   - ps: Install-Product node 8 x64
+  - ps: cd electron
+  - ps: npm install --global electron-builder
+  - ps: npm install --global electron-download
+  - ps: npm install -g yarn
 
 build_script:
   - cd electron
-  - yarn
-  - ps: bash ./build.sh "windows/amd64" | Out-Null
+  - yarn install
+  - ps: bash ./build.sh "windows/amd64"
   - ps: ls release\
   - ps: cd ..
 

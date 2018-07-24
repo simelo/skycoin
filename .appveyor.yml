@@ -22,15 +22,15 @@ environment:
   GOX_OUTPUT: .gox_output
   #APPVEYOR_RDP_PASSWORD: Aneroidsawq**2018
 
-cache:
-    - 'electron\node_modules'
-    - '%LOCALAPPDATA%\Yarn'
-    - '%USERPROFILE%\.electron'
+  #cache:
+  #    - 'electron\node_modules'
+  #    - '%LOCALAPPDATA%\Yarn'
+  #    - '%USERPROFILE%\.electron'
 
 install:
     - cmd: echo %PATH%
     - cmd: echo %GOPATH%
-    - cmd: set PATH=c:\msys64\usr\bin;%GOPATH%\bin;c:\go\bin;%PATH%
+    - cmd: set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
     - cmd: go version
     - cmd: go env
     - cmd: go get github.com/gz-c/gox
@@ -40,6 +40,7 @@ install:
     - cmd: npm install --global electron-builder
     - cmd: npm install --global electron-download
     - cmd: npm install -g yarn
+    - cmd: set PATH=c:\msys64\usr\bin;%PATH%
 
 build_script:
     - cmd: cd C:\gopath\src\github.com\skycoin\skycoin\electron

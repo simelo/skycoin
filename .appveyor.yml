@@ -40,7 +40,7 @@ install:
 build_script:
   - cd C:\gopath\src\github.com\skycoin\skycoin\electron
   - yarn install
-  - ps: bash ./build.sh "windows/amd64"
+  - cmd: bash ./build.sh "windows/amd64 windows/386"
   - ps: ls release\
   - ps: cd ..
 

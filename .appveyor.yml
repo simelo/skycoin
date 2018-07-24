@@ -38,7 +38,7 @@ install:
   - cmd: npm install -g yarn
 
 build_script:
-  - cd electron
+  - cd C:\gopath\src\github.com\skycoin\skycoin\electron
   - yarn install
   - ps: bash ./build.sh "windows/amd64"
   - ps: ls release\

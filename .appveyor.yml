@@ -34,6 +34,7 @@ install:
     - cmd: go version
     - cmd: go env
     - cmd: go get github.com/gz-c/gox
+    - cmd: set PAYH=c:\msys64\usr\bin;%PATH%
     - cmd: go get -t ./...
     - ps: Install-Product node 8 x64
     - ps: cd electron

@@ -30,11 +30,10 @@ cache:
 install:
     - cmd: echo %PATH%
     - cmd: echo %GOPATH%
-    - cmd: set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
+    - cmd: set PATH=c:\msys64\usr\bin;%GOPATH%\bin;c:\go\bin;%PATH%
     - cmd: go version
     - cmd: go env
     - cmd: go get github.com/gz-c/gox
-    - cmd: set PAYH=c:\msys64\usr\bin;%PATH%
     - cmd: go get -t ./...
     - ps: Install-Product node 8 x64
     - ps: cd electron

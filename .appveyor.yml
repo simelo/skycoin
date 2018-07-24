@@ -36,7 +36,7 @@ install:
 build_script:
   - cd electron
   - yarn
-  - ps: bash ./build.sh 'windows/amd64 windows/386' | Out-Null
+  - ps: bash ./build.sh 'windows/amd64' | Out-Null
   - ps: ls release\
   - ps: cd ..
 

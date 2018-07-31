@@ -41,6 +41,7 @@ install:
     - cmd: npm install -g yarn
     - cmd: cd C:\gopath\src\github.com\skycoin\skycoin
     - cmd: make install-linters
+    - cmd: make install-deps-libc
     - cmd: make install-deps-ui
 
 build_script:

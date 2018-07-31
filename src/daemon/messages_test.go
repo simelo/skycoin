@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"reflect"
 	"strconv"
 	"testing"
 
@@ -29,28 +28,20 @@ func setupMsgEncoding() {
  *
  *************************************/
 
-// MessagesAnnotationsIterator : Implementation of IAnnotationsIterator for type gnet.Message
+// EncoderAnnotationsIterator iterate over buffer annotations delimiting encoded object fields
 type MessagesAnnotationsIterator struct {
-	Message      gnet.Message
+	Iter         util.IAnnotationsIterator
 	LengthCalled bool
 	PrefixCalled bool
-	CurrentField int
-	MaxField     int
-	CurrentIndex int
 }
 
 // NewMessagesAnnotationsIterator : Initializes struct MessagesAnnotationsIterator
 func NewMessagesAnnotationsIterator(message gnet.Message) MessagesAnnotationsIterator {
-	var mai = MessagesAnnotationsIterator{}
-	mai.Message = message
-	mai.LengthCalled = false
-	mai.PrefixCalled = false
-	mai.CurrentField = 0
-	mai.CurrentIndex = -1
-
-	mai.MaxField = reflect.Indirect(reflect.ValueOf(mai.Message)).NumField()
-
-	return mai
+	return MessagesAnnotationsIterator{
+		Iter:         util.NewEncoderAnnotationsIterator(message),
+		LengthCalled: false,
+		PrefixCalled: false,
+	}
 }
 
 // Next : Yields next element of MessagesAnnotationsIterator
@@ -62,74 +53,8 @@ func (mai *MessagesAnnotationsIterator) Next() (util.Annotation, bool) {
 	if !mai.PrefixCalled {
 		mai.PrefixCalled = true
 		return util.Annotation{Size: 4, Name: "Prefix"}, true
-
 	}
-	if mai.CurrentField >= mai.MaxField {
-		return util.Annotation{}, false
-	}
-
-	var i = mai.CurrentField
-	var j = mai.CurrentIndex
-
-	var v = reflect.Indirect(reflect.ValueOf(mai.Message))
-	t := v.Type()
-	vF := v.Field(i)
-	f := t.Field(i)
-	for f.PkgPath != "" && i < mai.MaxField {
-		i++
-		mai.CurrentField++
-		mai.CurrentIndex = -1
-		j = -1
-		if i < mai.MaxField {
-			f = t.Field(i)
-			if f.Type.Kind() == reflect.Slice {
-				if _, omitempty := encoder.ParseTag(f.Tag.Get("enc")); omitempty {
-					if i == mai.MaxField-1 {
-						vF = v.Field(i)
-						if vF.Len() == 0 {
-							// Last field is empty slice. Nothing further tokens
-							return util.Annotation{}, false
-						}
-					} else {
-						panic(encoder.ErrInvalidOmitEmpty)
-					}
-				}
-			}
-		} else {
-			return util.Annotation{}, false
-		}
-	}
-	if f.Tag.Get("enc") != "-" {
-		if vF.CanSet() || f.Name != "_" {
-			if v.Field(i).Kind() == reflect.Slice {
-				if mai.CurrentIndex == -1 {
-					mai.CurrentIndex = 0
-					return util.Annotation{Size: 4, Name: f.Name + " length"}, true
-				}
-				sliceLen := v.Field(i).Len()
-				mai.CurrentIndex++
-				if mai.CurrentIndex < sliceLen {
-					// Emit annotation for slice item
-					return util.Annotation{Size: len(encoder.Serialize(v.Field(i).Slice(j, j+1).Interface())[4:]), Name: f.Name + "[" + strconv.Itoa(j) + "]"}, true
-				}
-				// No more annotation tokens for current slice field
-				mai.CurrentIndex = -1
-				mai.CurrentField++
-				if sliceLen > 0 {
-					// Emit annotation for last item
-					return util.Annotation{Size: len(encoder.Serialize(v.Field(i).Slice(j, j+1).Interface())[4:]), Name: f.Name + "[" + strconv.Itoa(j) + "]"}, true
-				}
-				// Zero length slice. Start over
-				return mai.Next()
-			}
-
-			mai.CurrentField++
-			return util.Annotation{Size: len(encoder.Serialize(v.Field(i).Interface())), Name: f.Name}, true
-
-		}
-	}
-
-	return util.Annotation{}, false
+	return mai.Iter.Next()
 }
 
 /**************************************

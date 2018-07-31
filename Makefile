@@ -39,6 +39,7 @@ ifeq ($(shell uname -s),Linux)
   LDPATH=$(shell printenv LD_LIBRARY_PATH)
   LDPATHVAR=LD_LIBRARY_PATH
   LDFLAGS=$(LIBC_FLAGS) $(STDC_FLAG)
+  CMAKE_COMMAND=cmake ..
 ifndef OSNAME
   OSNAME = linux
 endif
@@ -50,11 +51,13 @@ endif
   LDPATH=$(shell printenv DYLD_LIBRARY_PATH)
   LDPATHVAR=DYLD_LIBRARY_PATH
   LDFLAGS=$(LIBC_FLAGS) -framework CoreFoundation -framework Security
+  CMAKE_COMMAND=cmake ..
 else
   LDLIBS = $(LIBC_LIBS)
   LDPATH=$(shell printenv LD_LIBRARY_PATH)
   LDPATHVAR=LD_LIBRARY_PATH
   LDFLAGS=$(LIBC_FLAGS)
+  CMAKE_COMMAND=cmake -Wno-dev -DCTESTS=ON -DI18N=OFF -G 'MSYS Makefiles' ..
 endif
 
 run:  ## Run the skycoin node. To add arguments, do 'make ARGS="--foo" run'.
@@ -168,7 +171,7 @@ install-linters: ## Install linters
 install-deps-libc: configure-build ## Install locally dependencies for testing libskycoin
 	git clone --recursive https://github.com/skycoin/Criterion $(BUILD_DIR)/usr/tmp/Criterion
 	mkdir $(BUILD_DIR)/usr/tmp/Criterion/build
-	cd    $(BUILD_DIR)/usr/tmp/Criterion/build && cmake .. && cmake --build .
+	cd    $(BUILD_DIR)/usr/tmp/Criterion/build && $(CMAKE_COMMAND) && cmake --build .
 	mv    $(BUILD_DIR)/usr/tmp/Criterion/build/libcriterion.* $(BUILD_DIR)/usr/lib/
 	cp -R $(BUILD_DIR)/usr/tmp/Criterion/include/* $(BUILD_DIR)/usr/include/
 

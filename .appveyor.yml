@@ -54,7 +54,9 @@ after_build:
     - ps: 7z a skycoin.zip C:\gopath\src\github.com\skycoin\skycoin\electron\release\*
     - ps: ls *.zip
 
-test:
+test: off
+
+test_script:
     - make lint
     - make test-386
 

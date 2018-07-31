@@ -40,6 +40,7 @@ ifeq ($(shell uname -s),Linux)
   LDPATHVAR=LD_LIBRARY_PATH
   LDFLAGS=$(LIBC_FLAGS) $(STDC_FLAG)
   CMAKE_COMMAND=cmake ..
+  SKIP_DIRS=lib/cgo
 ifndef OSNAME
   OSNAME = linux
 endif
@@ -52,12 +53,14 @@ endif
   LDPATHVAR=DYLD_LIBRARY_PATH
   LDFLAGS=$(LIBC_FLAGS) -framework CoreFoundation -framework Security
   CMAKE_COMMAND=cmake ..
+  SKIP_DIRS=lib/cgo
 else
   LDLIBS = $(LIBC_LIBS)
   LDPATH=$(shell printenv LD_LIBRARY_PATH)
   LDPATHVAR=LD_LIBRARY_PATH
   LDFLAGS=$(LIBC_FLAGS)
   CMAKE_COMMAND=cmake -Wno-dev -DCTESTS=ON -DI18N=OFF -G 'MSYS Makefiles' ..
+  SKIP_DIRS=lib\cgo
 endif
 
 run:  ## Run the skycoin node. To add arguments, do 'make ARGS="--foo" run'.
@@ -121,7 +124,7 @@ docs: docs-libc
 
 lint: ## Run linters. Use make install-linters first.
 	vendorcheck ./...
-	golangci-lint run --no-config  --deadline=3m --concurrency=2 --disable-all --tests --skip-dirs=lib/cgo \
+	golangci-lint run --no-config  --deadline=3m --concurrency=2 --disable-all --tests --skip-dirs=$(SKIP_DIRS) \
 		-E goimports \
 		-E golint \
 		-E varcheck \

@@ -1,6 +1,6 @@
 image: Visual Studio 2017
-platform:
-    - x64
+
+platform: x86_64
 
 clone_folder: c:\gopath\src\github.com\skycoin\skycoin
 
@@ -10,13 +10,21 @@ branches:
 
 init:
     - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-      
+    - set PATH=C:\msys64\mingw64\bin;C:\msys64\mingw32\bin;C:\msys64\usr\bin;%PATH%
+    - cmd: set MSYSTEM=MINGW64
+
 on_finish:
     - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 environment:
   GOPATH: c:\gopath
   GOX_OUTPUT: .gox_output
+  BUILD_DIR: build
+  BUILDLIB_DIR: $BUILD_DIR/libskycoin
+  LIB_DIR: lib
+  CRAM_SHELL: "C:\\msys64\\usr\\bin\\sh.exe"
+  CPPFLAGS: -D__USE_MINGW_ANSI_STDIO=1
+
   #APPVEYOR_RDP_PASSWORD: Aneroidsawq**2018
 
 cache:
@@ -25,17 +33,14 @@ cache:
     - '%USERPROFILE%\.electron'
 
 install:
-    - cmd: echo %PATH%
-    - cmd: echo %GOPATH%
-    - cmd: set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
-    - cmd: go version
-    - cmd: go env
     - cmd: go get github.com/gz-c/gox
     - ps: Install-Product node 8 x64
     - ps: cd electron
     - cmd: npm install --global electron-builder
     - cmd: npm install --global electron-download
     - cmd: npm install -g yarn
+    - cmd: cd C:\gopath\src\github.com\skycoin\skycoin
+    - cmd: make install-linters
 
 build_script:
     - cmd: git checkout develop

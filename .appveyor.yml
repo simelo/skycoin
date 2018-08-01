@@ -10,7 +10,7 @@ branches:
 
 init:
     - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-    - set PATH=C:\msys64\mingw64\bin;C:\msys64\mingw32\bin;C:\msys64\usr\bin;C:\gopath\bin;C:\go\bin;%PATH%
+    - cmd: set PATH=C:\msys64\mingw64\bin;C:\msys64\mingw32\bin;C:\msys64\usr\bin;C:\gopath\bin;C:\go\bin;%PATH%
     - cmd: set MSYSTEM=MINGW64
 
 on_finish:
@@ -43,7 +43,6 @@ install:
     - cmd: make install-deps-ui
 
 build_script:
-    - cmd: git checkout develop
     - cmd: cd C:\gopath\src\github.com\skycoin\skycoin\electron
     - cmd: yarn install
     - cmd: bash ./build.sh "windows/amd64 windows/386"
@@ -57,8 +56,8 @@ after_build:
 test: off
 
 test_script:
-    - make lint
-    - make test-386
+    - cmd: make lint
+    - cmd: make test-386
 
 artifacts:
     - path: skycoin.zip

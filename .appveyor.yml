@@ -57,7 +57,8 @@ test: off
 
 test_script:
     - cmd: make lint
-    - cmd: make test-386
+    - cmd: make lint-ui
+    - cmd: make test-ui
 
 artifacts:
     - path: skycoin.zip

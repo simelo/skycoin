@@ -60,7 +60,7 @@ else
   LDPATHVAR=LD_LIBRARY_PATH
   LDFLAGS=$(LIBC_FLAGS)
   CMAKE_COMMAND=cmake -Wno-dev -DCTESTS=ON -DI18N=OFF -G 'MSYS Makefiles' ..
-  SKIP_DIRS=lib\cgo
+  SKIP_DIRS=lib\\cgo
 endif
 
 run:  ## Run the skycoin node. To add arguments, do 'make ARGS="--foo" run'.

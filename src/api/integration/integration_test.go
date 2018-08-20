@@ -57,8 +57,9 @@ When update flag is set to true all tests pass
 const (
 	testModeStable           = "stable"
 	testModeLive             = "live"
-	testModeDisableWalletApi = "disable-wallet-api"
-	testModeDisableSeedApi   = "disable-seed-api"
+	testModeDisableWalletAPI = "disable-wallet-api"
+	testModeEnableSeedAPI    = "enable-seed-api"
+	testModeDisableGUI       = "disable-gui"
 
 	testFixturesDir = "testdata"
 )
@@ -86,8 +87,9 @@ func mode(t *testing.T) string {
 		mode = testModeStable
 	case testModeLive,
 		testModeStable,
-		testModeDisableWalletApi,
-		testModeDisableSeedApi:
+		testModeDisableWalletAPI,
+		testModeEnableSeedAPI,
+		testModeDisableGUI:
 	default:
 		t.Fatal("Invalid test mode, must be stable, live or disable-wallet-api")
 	}
@@ -116,8 +118,8 @@ func doLive(t *testing.T) bool {
 	return false
 }
 
-func doDisableWalletApi(t *testing.T) bool {
-	if enabled() && mode(t) == testModeDisableWalletApi {
+func doDisableWalletAPI(t *testing.T) bool {
+	if enabled() && mode(t) == testModeDisableWalletAPI {
 		return true
 	}
 
@@ -125,12 +127,21 @@ func doDisableWalletApi(t *testing.T) bool {
 	return false
 }
 
-func doDisableSeedApi(t *testing.T) bool {
-	if enabled() && mode(t) == testModeDisableSeedApi {
+func doEnableSeedAPI(t *testing.T) bool {
+	if enabled() && mode(t) == testModeEnableSeedAPI {
 		return true
 	}
 
 	t.Skip("EnableSeedAPI tests disabled")
+	return false
+}
+
+func doDisableGUI(t *testing.T) bool {
+	if enabled() && mode(t) == testModeDisableGUI {
+		return true
+	}
+
+	t.Skip("DisableGUIAPI tests disabled")
 	return false
 }
 
@@ -153,18 +164,6 @@ func doLiveWallet(t *testing.T) bool {
 
 	t.Skip("Tests requiring wallet envvars are disabled")
 	return false
-}
-
-func loadJSON(t *testing.T, filename string, obj interface{}) {
-	f, err := os.Open(filename)
-	require.NoError(t, err, filename)
-	defer f.Close()
-
-	d := json.NewDecoder(f)
-	d.DisallowUnknownFields()
-
-	err = d.Decode(obj)
-	require.NoError(t, err, filename)
 }
 
 func loadGoldenFile(t *testing.T, filename string, testData TestData) {
@@ -549,7 +548,7 @@ func testKnownBlocks(t *testing.T) {
 			name:    "unknown hash",
 			hash:    "80744ec25e6233f40074d35bf0bfdbddfac777869b954a96833cb89f44204444",
 			errCode: http.StatusNotFound,
-			errMsg:  "404 Not Found\n",
+			errMsg:  "404 Not Found",
 		},
 		{
 			name:   "valid hash",
@@ -860,7 +859,7 @@ func TestStableAddressUxOuts(t *testing.T) {
 		{
 			name:    "no addresses",
 			errCode: http.StatusBadRequest,
-			errMsg:  "400 Bad Request - address is empty\n",
+			errMsg:  "400 Bad Request - address is empty",
 		},
 		{
 			name:   "unknown address",
@@ -904,12 +903,12 @@ func TestLiveAddressUxOuts(t *testing.T) {
 		{
 			name:    "no addresses",
 			errCode: http.StatusBadRequest,
-			errMsg:  "400 Bad Request - address is empty\n",
+			errMsg:  "400 Bad Request - address is empty",
 		},
 		{
 			name:    "invalid address length",
 			errCode: http.StatusBadRequest,
-			errMsg:  "400 Bad Request - Invalid address length\n",
+			errMsg:  "400 Bad Request - Invalid address length",
 			addr:    "prRXwTcDK24hs6AFxj",
 		},
 		{
@@ -946,14 +945,14 @@ func TestStableBlocks(t *testing.T) {
 	progress, err := c.BlockchainProgress()
 	require.NoError(t, err)
 
-	lastNBlocks := 10
-	require.True(t, int(progress.Current) > lastNBlocks+1)
+	var lastNBlocks uint64 = 10
+	require.True(t, progress.Current > lastNBlocks+1)
 
 	cases := []struct {
 		name    string
 		golden  string
-		start   int
-		end     int
+		start   uint64
+		end     uint64
 		errCode int
 		errMsg  string
 	}{
@@ -966,8 +965,8 @@ func TestStableBlocks(t *testing.T) {
 		{
 			name:   "last 10",
 			golden: "blocks-last-10.golden",
-			start:  int(progress.Current) - lastNBlocks,
-			end:    int(progress.Current),
+			start:  progress.Current - lastNBlocks,
+			end:    progress.Current,
 		},
 		{
 			name:   "first block",
@@ -979,27 +978,13 @@ func TestStableBlocks(t *testing.T) {
 			name:   "all blocks",
 			golden: "blocks-all.golden",
 			start:  0,
-			end:    int(progress.Current),
+			end:    progress.Current,
 		},
 		{
 			name:   "start > end",
 			golden: "blocks-end-less-than-start.golden",
 			start:  10,
 			end:    9,
-		},
-		{
-			name:    "start negative",
-			start:   -10,
-			end:     9,
-			errCode: http.StatusBadRequest,
-			errMsg:  "400 Bad Request - Invalid start value \"-10\"\n",
-		},
-		{
-			name:    "end negative",
-			start:   10,
-			end:     -9,
-			errCode: http.StatusBadRequest,
-			errMsg:  "400 Bad Request - Invalid end value \"-9\"\n",
 		},
 	}
 
@@ -1026,7 +1011,7 @@ func TestLiveBlocks(t *testing.T) {
 	testBlocks(t, 1, 10)
 }
 
-func testBlocks(t *testing.T, start, end int) *visor.ReadableBlocks {
+func testBlocks(t *testing.T, start, end uint64) *visor.ReadableBlocks {
 	c := api.NewClient(nodeAddress())
 
 	blocks, err := c.Blocks(start, end)
@@ -1035,7 +1020,7 @@ func testBlocks(t *testing.T, start, end int) *visor.ReadableBlocks {
 	if start > end {
 		require.Empty(t, blocks.Blocks)
 	} else {
-		require.Len(t, blocks.Blocks, end-start+1)
+		require.Len(t, blocks.Blocks, int(end-start+1))
 	}
 
 	var prevBlock *visor.ReadableBlock
@@ -1045,7 +1030,7 @@ func testBlocks(t *testing.T, start, end int) *visor.ReadableBlocks {
 		}
 
 		bHash, err := c.BlockByHash(b.Head.BlockHash)
-		require.Equal(t, uint64(idx+start), b.Head.BkSeq)
+		require.Equal(t, uint64(idx)+start, b.Head.BkSeq)
 		require.NoError(t, err)
 		require.NotNil(t, bHash)
 		require.Equal(t, b, *bHash)
@@ -1122,7 +1107,7 @@ func TestStableNetworkConnections(t *testing.T) {
 	require.Empty(t, connections.Connections)
 
 	connection, err := c.NetworkConnection("127.0.0.1:4444")
-	assertResponseError(t, err, http.StatusNotFound, "404 Not Found\n")
+	assertResponseError(t, err, http.StatusNotFound, "404 Not Found")
 	require.Nil(t, connection)
 }
 
@@ -1212,31 +1197,31 @@ func TestLiveTransaction(t *testing.T) {
 
 	cases := []struct {
 		name       string
-		txId       string
+		txID       string
 		err        api.ClientError
 		goldenFile string
 	}{
 		{
-			name: "invalid txId",
-			txId: "abcd",
+			name: "invalid txID",
+			txID: "abcd",
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - Invalid hex length\n",
+				Message:    "400 Bad Request - Invalid hex length",
 			},
 		},
 		{
-			name: "empty txId",
-			txId: "",
+			name: "empty txID",
+			txID: "",
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - txid is empty\n",
+				Message:    "400 Bad Request - txid is empty",
 			},
 		},
 		{
 			name:       "OK",
-			txId:       "76ecbabc53ea2a3be46983058433dda6a3cf7ea0b86ba14d90b932fa97385de7",
+			txID:       "76ecbabc53ea2a3be46983058433dda6a3cf7ea0b86ba14d90b932fa97385de7",
 			goldenFile: "./transaction.golden",
 		},
 	}
@@ -1244,14 +1229,22 @@ func TestLiveTransaction(t *testing.T) {
 	c := api.NewClient(nodeAddress())
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tx, err := c.Transaction(tc.txId)
+			tx, err := c.Transaction(tc.txID)
 			if err != nil {
 				require.Equal(t, tc.err, err)
 				return
 			}
-			var expected *visor.ReadableTransaction
+
+			// tx.Status.Height is how many blocks are above this transaction,
+			// make sure it is past some checkpoint height
+			require.True(t, tx.Status.Height >= 50836)
+
+			// daemon.TransactionResult.Status.Height is not stable
+			tx.Status.Height = 0
+
+			var expected daemon.TransactionResult
 			loadGoldenFile(t, tc.goldenFile, TestData{tx, &expected})
-			require.Equal(t, expected, &tx.Transaction)
+			require.Equal(t, &expected, tx)
 		})
 	}
 }
@@ -1263,43 +1256,43 @@ func TestStableTransaction(t *testing.T) {
 
 	cases := []struct {
 		name       string
-		txId       string
+		txID       string
 		err        api.ClientError
 		goldenFile string
 	}{
 		{
 			name: "invalid txId",
-			txId: "abcd",
+			txID: "abcd",
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - Invalid hex length\n",
+				Message:    "400 Bad Request - Invalid hex length",
 			},
 			goldenFile: "",
 		},
 		{
 			name: "not exist",
-			txId: "701d23fd513bad325938ba56869f9faba19384a8ec3dd41833aff147eac53947",
+			txID: "701d23fd513bad325938ba56869f9faba19384a8ec3dd41833aff147eac53947",
 			err: api.ClientError{
 				Status:     "404 Not Found",
 				StatusCode: http.StatusNotFound,
-				Message:    "404 Not Found\n",
+				Message:    "404 Not Found",
 			},
 			goldenFile: "",
 		},
 		{
 			name: "empty txId",
-			txId: "",
+			txID: "",
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - txid is empty\n",
+				Message:    "400 Bad Request - txid is empty",
 			},
 			goldenFile: "",
 		},
 		{
 			name:       "genesis transaction",
-			txId:       "d556c1c7abf1e86138316b8c17183665512dc67633c04cf236a8b7f332cb4add",
+			txID:       "d556c1c7abf1e86138316b8c17183665512dc67633c04cf236a8b7f332cb4add",
 			goldenFile: "genesis-transaction.golden",
 		},
 	}
@@ -1307,15 +1300,15 @@ func TestStableTransaction(t *testing.T) {
 	c := api.NewClient(nodeAddress())
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tx, err := c.Transaction(tc.txId)
+			tx, err := c.Transaction(tc.txID)
 			if err != nil {
 				require.Equal(t, tc.err, err)
 				return
 			}
 
-			var expected *visor.ReadableTransaction
+			var expected daemon.TransactionResult
 			loadGoldenFile(t, tc.goldenFile, TestData{tx, &expected})
-			require.Equal(t, expected, &tx.Transaction)
+			require.Equal(t, &expected, tx)
 		})
 	}
 }
@@ -1351,7 +1344,7 @@ func TestStableTransactions(t *testing.T) {
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid address length\n",
+				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid address length",
 			},
 		},
 		{
@@ -1360,7 +1353,7 @@ func TestStableTransactions(t *testing.T) {
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid base58 character\n",
+				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid base58 character",
 			},
 		},
 		{
@@ -1369,7 +1362,7 @@ func TestStableTransactions(t *testing.T) {
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid checksum\n",
+				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid checksum",
 			},
 		},
 		{
@@ -1378,7 +1371,7 @@ func TestStableTransactions(t *testing.T) {
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - txId is empty\n",
+				Message:    "400 Bad Request - txId is empty",
 			},
 			goldenFile: "./empty-addrs.golden",
 		},
@@ -1436,7 +1429,7 @@ func TestStableConfirmedTransactions(t *testing.T) {
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid address length\n",
+				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid address length",
 			},
 		},
 		{
@@ -1445,7 +1438,7 @@ func TestStableConfirmedTransactions(t *testing.T) {
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid base58 character\n",
+				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid base58 character",
 			},
 		},
 		{
@@ -1454,7 +1447,7 @@ func TestStableConfirmedTransactions(t *testing.T) {
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid checksum\n",
+				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid checksum",
 			},
 		},
 		{
@@ -1500,7 +1493,7 @@ func TestStableUnconfirmedTransactions(t *testing.T) {
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid address length\n",
+				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid address length",
 			},
 		},
 		{
@@ -1509,7 +1502,7 @@ func TestStableUnconfirmedTransactions(t *testing.T) {
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid base58 character\n",
+				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid base58 character",
 			},
 		},
 		{
@@ -1518,7 +1511,7 @@ func TestStableUnconfirmedTransactions(t *testing.T) {
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid checksum\n",
+				Message:    "400 Bad Request - parse parameter: 'addrs' failed: Invalid checksum",
 			},
 		},
 		{
@@ -1585,40 +1578,40 @@ func TestStableRawTransaction(t *testing.T) {
 
 	cases := []struct {
 		name  string
-		txId  string
+		txID  string
 		err   api.ClientError
 		rawTx string
 	}{
 		{
 			name: "invalid hex length",
-			txId: "abcd",
+			txID: "abcd",
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - Invalid hex length\n",
+				Message:    "400 Bad Request - Invalid hex length",
 			},
 		},
 		{
 			name: "not found",
-			txId: "701d23fd513bad325938ba56869f9faba19384a8ec3dd41833aff147eac53947",
+			txID: "701d23fd513bad325938ba56869f9faba19384a8ec3dd41833aff147eac53947",
 			err: api.ClientError{
 				Status:     "404 Not Found",
 				StatusCode: http.StatusNotFound,
-				Message:    "404 Not Found\n",
+				Message:    "404 Not Found",
 			},
 		},
 		{
 			name: "odd length hex string",
-			txId: "abcdeffedca",
+			txID: "abcdeffedca",
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - encoding/hex: odd length hex string\n",
+				Message:    "400 Bad Request - encoding/hex: odd length hex string",
 			},
 		},
 		{
 			name:  "OK",
-			txId:  "d556c1c7abf1e86138316b8c17183665512dc67633c04cf236a8b7f332cb4add",
+			txID:  "d556c1c7abf1e86138316b8c17183665512dc67633c04cf236a8b7f332cb4add",
 			rawTx: "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000f8f9c644772dc5373d85e11094e438df707a42c900407a10f35a000000407a10f35a0000",
 		},
 	}
@@ -1626,7 +1619,7 @@ func TestStableRawTransaction(t *testing.T) {
 	c := api.NewClient(nodeAddress())
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			txResult, err := c.RawTransaction(tc.txId)
+			txResult, err := c.RawTransaction(tc.txID)
 			if err != nil {
 				require.Equal(t, tc.err, err, "case: "+tc.name)
 				return
@@ -1643,36 +1636,36 @@ func TestLiveRawTransaction(t *testing.T) {
 
 	cases := []struct {
 		name  string
-		txId  string
+		txID  string
 		err   api.ClientError
 		rawTx string
 	}{
 		{
 			name: "invalid hex length",
-			txId: "abcd",
+			txID: "abcd",
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - Invalid hex length\n",
+				Message:    "400 Bad Request - Invalid hex length",
 			},
 		},
 		{
 			name: "odd length hex string",
-			txId: "abcdeffedca",
+			txID: "abcdeffedca",
 			err: api.ClientError{
 				Status:     "400 Bad Request",
 				StatusCode: http.StatusBadRequest,
-				Message:    "400 Bad Request - encoding/hex: odd length hex string\n",
+				Message:    "400 Bad Request - encoding/hex: odd length hex string",
 			},
 		},
 		{
 			name:  "OK - genesis tx",
-			txId:  "d556c1c7abf1e86138316b8c17183665512dc67633c04cf236a8b7f332cb4add",
+			txID:  "d556c1c7abf1e86138316b8c17183665512dc67633c04cf236a8b7f332cb4add",
 			rawTx: "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000f8f9c644772dc5373d85e11094e438df707a42c900407a10f35a000000407a10f35a0000",
 		},
 		{
 			name:  "OK",
-			txId:  "701d23fd513bad325938ba56869f9faba19384a8ec3dd41833aff147eac53947",
+			txID:  "701d23fd513bad325938ba56869f9faba19384a8ec3dd41833aff147eac53947",
 			rawTx: "dc00000000f8293dbfdddcc56a97664655ceee650715d35a0dda32a9f0ce0e2e99d4899124010000003981061c7275ae9cc936e902a5367fdd87ef779bbdb31e1e10d325d17a129abb34f6e597ceeaf67bb051774b41c58276004f6a63cb81de61d4693bc7a5536f320001000000fe6762d753d626115c8dd3a053b5fb75d6d419a8d0fb1478c5fffc1fe41c5f2002000000003be2537f8c0893fddcddc878518f38ea493d949e008988068d0000002739570000000000009037ff169fbec6db95e2537e4ff79396c050aeeb00e40b54020000002739570000000000",
 		},
 	}
@@ -1680,7 +1673,7 @@ func TestLiveRawTransaction(t *testing.T) {
 	c := api.NewClient(nodeAddress())
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			txResult, err := c.RawTransaction(tc.txId)
+			txResult, err := c.RawTransaction(tc.txID)
 			if err != nil {
 				require.Equal(t, tc.err, err, "case: "+tc.name)
 				return
@@ -1716,7 +1709,7 @@ func TestWalletNewSeed(t *testing.T) {
 			name:    "entropy 100",
 			entropy: 100,
 			errCode: http.StatusBadRequest,
-			errMsg:  "400 Bad Request - entropy length must be 128 or 256\n",
+			errMsg:  "400 Bad Request - entropy length must be 128 or 256",
 		},
 	}
 
@@ -1772,7 +1765,7 @@ func TestStableAddressTransactions(t *testing.T) {
 			name:    "invalid address",
 			address: "prRXwTcDK24hs6AFxj",
 			errCode: http.StatusBadRequest,
-			errMsg:  "400 Bad Request - invalid address\n",
+			errMsg:  "400 Bad Request - invalid address",
 		},
 	}
 
@@ -1818,7 +1811,7 @@ func TestLiveAddressTransactions(t *testing.T) {
 			name:    "invalid address",
 			address: "prRXwTcDK24hs6AFxj",
 			errCode: http.StatusBadRequest,
-			errMsg:  "400 Bad Request - invalid address\n",
+			errMsg:  "400 Bad Request - invalid address",
 		},
 	}
 
@@ -2081,7 +2074,7 @@ func TestLiveWalletSpend(t *testing.T) {
 	}
 
 	// Confirms sending coins less than 0.001 is not allowed
-	errMsg := "500 Internal Server Error - Transaction violates soft constraint: invalid amount, too many decimal places\n"
+	errMsg := "500 Internal Server Error - Transaction violates soft constraint: invalid amount, too many decimal places"
 	for i := uint64(1); i < uint64(1000); i++ {
 		cs, err := droplet.ToString(i)
 		require.NoError(t, err)
@@ -2089,7 +2082,7 @@ func TestLiveWalletSpend(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			result, err := c.Spend(w.Filename(), w.Entries[0].Address.String(), i, password)
 			if w.IsEncrypted() && len(password) == 0 {
-				assertResponseError(t, err, http.StatusBadRequest, "400 Bad Request - missing password\n")
+				assertResponseError(t, err, http.StatusBadRequest, "400 Bad Request - missing password")
 				return
 			}
 			assertResponseError(t, err, http.StatusInternalServerError, errMsg)
@@ -2182,7 +2175,7 @@ func TestLiveWalletCreateTransactionSpecific(t *testing.T) {
 					},
 				},
 			},
-			err:  "400 Bad Request - to[0].coins has too many decimal places\n",
+			err:  "400 Bad Request - to[0].coins has too many decimal places",
 			code: http.StatusBadRequest,
 		},
 
@@ -2215,7 +2208,7 @@ func TestLiveWalletCreateTransactionSpecific(t *testing.T) {
 					},
 				},
 			},
-			err:  "400 Bad Request - total output hours error: uint64 addition overflow\n",
+			err:  "400 Bad Request - total output hours error: uint64 addition overflow",
 			code: http.StatusBadRequest,
 		},
 
@@ -2238,7 +2231,7 @@ func TestLiveWalletCreateTransactionSpecific(t *testing.T) {
 					},
 				},
 			},
-			err:  "400 Bad Request - balance is not sufficient\n",
+			err:  "400 Bad Request - balance is not sufficient",
 			code: http.StatusBadRequest,
 		},
 
@@ -2261,7 +2254,7 @@ func TestLiveWalletCreateTransactionSpecific(t *testing.T) {
 					},
 				},
 			},
-			err:  "400 Bad Request - hours are not sufficient\n",
+			err:  "400 Bad Request - hours are not sufficient",
 			code: http.StatusBadRequest,
 		},
 
@@ -2523,7 +2516,7 @@ func TestLiveWalletCreateTransactionSpecific(t *testing.T) {
 					},
 				},
 			},
-			err:  fmt.Sprintf("400 Bad Request - unspent output of %s does not exist\n", unknownOutput.Hex()),
+			err:  fmt.Sprintf("400 Bad Request - unspent output of %s does not exist", unknownOutput.Hex()),
 			code: http.StatusBadRequest,
 		},
 
@@ -2547,7 +2540,7 @@ func TestLiveWalletCreateTransactionSpecific(t *testing.T) {
 					},
 				},
 			},
-			err:  "400 Bad Request - uxout is not owned by any address in the wallet\n",
+			err:  "400 Bad Request - uxout is not owned by any address in the wallet",
 			code: http.StatusBadRequest,
 		},
 
@@ -2571,7 +2564,7 @@ func TestLiveWalletCreateTransactionSpecific(t *testing.T) {
 					},
 				},
 			},
-			err:  "400 Bad Request - balance is not sufficient\n",
+			err:  "400 Bad Request - balance is not sufficient",
 			code: http.StatusBadRequest,
 		},
 
@@ -2596,7 +2589,7 @@ func TestLiveWalletCreateTransactionSpecific(t *testing.T) {
 					},
 				},
 			},
-			err:  "400 Bad Request - hours are not sufficient\n",
+			err:  "400 Bad Request - hours are not sufficient",
 			code: http.StatusBadRequest,
 		},
 
@@ -2662,7 +2655,7 @@ func TestLiveWalletCreateTransactionSpecific(t *testing.T) {
 					},
 				},
 			},
-			err:  "400 Bad Request - address not found in wallet\n",
+			err:  "400 Bad Request - address not found in wallet",
 			code: http.StatusBadRequest,
 		},
 
@@ -2726,7 +2719,7 @@ func TestLiveWalletCreateTransactionSpecific(t *testing.T) {
 					},
 				},
 			},
-			err:  "401 Unauthorized - invalid password\n",
+			err:  "401 Unauthorized - invalid password",
 			code: http.StatusUnauthorized,
 		})
 
@@ -2749,7 +2742,7 @@ func TestLiveWalletCreateTransactionSpecific(t *testing.T) {
 					},
 				},
 			},
-			err:  "400 Bad Request - missing password\n",
+			err:  "400 Bad Request - missing password",
 			code: http.StatusBadRequest,
 		})
 
@@ -2773,7 +2766,7 @@ func TestLiveWalletCreateTransactionSpecific(t *testing.T) {
 					},
 				},
 			},
-			err:  "400 Bad Request - wallet is not encrypted\n",
+			err:  "400 Bad Request - wallet is not encrypted",
 			code: http.StatusBadRequest,
 		})
 	}
@@ -3465,7 +3458,7 @@ func TestEncryptWallet(t *testing.T) {
 
 	//  Encrypt the wallet again, should returns error
 	_, err = c.EncryptWallet(w.Meta.Filename, "pwd")
-	assertResponseError(t, err, http.StatusBadRequest, "400 Bad Request - wallet is encrypted\n")
+	assertResponseError(t, err, http.StatusBadRequest, "400 Bad Request - wallet is encrypted")
 
 	// Confirms that no sensitive data do exist in wallet file
 	wf, err := c.WalletFolderName()
@@ -3495,11 +3488,11 @@ func TestDecryptWallet(t *testing.T) {
 
 	// Decrypt wallet with different password, must fail
 	_, err := c.DecryptWallet(w.Meta.Filename, "pwd1")
-	assertResponseError(t, err, http.StatusUnauthorized, "401 Unauthorized - invalid password\n")
+	assertResponseError(t, err, http.StatusUnauthorized, "401 Unauthorized - invalid password")
 
 	// Decrypt wallet with no password, must fail
 	_, err = c.DecryptWallet(w.Meta.Filename, "")
-	assertResponseError(t, err, http.StatusBadRequest, "400 Bad Request - missing password\n")
+	assertResponseError(t, err, http.StatusBadRequest, "400 Bad Request - missing password")
 
 	// Decrypts wallet with correct password
 	dw, err := c.DecryptWallet(w.Meta.Filename, "pwd")
@@ -3530,7 +3523,7 @@ func TestDecryptWallet(t *testing.T) {
 }
 
 func TestGetWalletSeedDisabledAPI(t *testing.T) {
-	if !doDisableSeedApi(t) {
+	if !doLiveOrStable(t) {
 		return
 	}
 
@@ -3541,11 +3534,11 @@ func TestGetWalletSeedDisabledAPI(t *testing.T) {
 	defer clean()
 
 	_, err := c.GetWalletSeed(w.Meta.Filename, "pwd")
-	assertResponseError(t, err, http.StatusForbidden, "403 Forbidden\n")
+	assertResponseError(t, err, http.StatusForbidden, "403 Forbidden")
 }
 
 func TestGetWalletSeedEnabledAPI(t *testing.T) {
-	if !doLiveOrStable(t) {
+	if !doEnableSeedAPI(t) {
 		return
 	}
 
@@ -3565,21 +3558,21 @@ func TestGetWalletSeedEnabledAPI(t *testing.T) {
 
 	// Get seed of wrong wallet id
 	_, err = c.GetWalletSeed("w.wlt", "pwd")
-	assertResponseError(t, err, http.StatusNotFound, "404 Not Found\n")
+	assertResponseError(t, err, http.StatusNotFound, "404 Not Found")
 
 	// Check with invalid password
 	_, err = c.GetWalletSeed(w.Meta.Filename, "wrong password")
-	assertResponseError(t, err, http.StatusUnauthorized, "401 Unauthorized - invalid password\n")
+	assertResponseError(t, err, http.StatusUnauthorized, "401 Unauthorized - invalid password")
 
 	// Check with missing password
 	_, err = c.GetWalletSeed(w.Meta.Filename, "")
-	assertResponseError(t, err, http.StatusBadRequest, "400 Bad Request - missing password\n")
+	assertResponseError(t, err, http.StatusBadRequest, "400 Bad Request - missing password")
 
 	// Create unencrypted wallet to check against
 	nw, _, nclean := createWallet(t, c, false, "", "")
 	defer nclean()
 	_, err = c.GetWalletSeed(nw.Meta.Filename, "pwd")
-	assertResponseError(t, err, http.StatusBadRequest, "400 Bad Request - wallet is not encrypted\n")
+	assertResponseError(t, err, http.StatusBadRequest, "400 Bad Request - wallet is not encrypted")
 }
 
 // prepareAndCheckWallet gets wallet from environment, and confirms:
@@ -3688,32 +3681,6 @@ func getAddressBalance(t *testing.T, c *api.Client, addr string) (uint64, uint64
 	return bp.Confirmed.Coins, bp.Confirmed.Hours
 }
 
-func checkNoSensitiveData(t *testing.T, w *wallet.Wallet) {
-	require.Empty(t, w.Meta["seed"])
-	require.Empty(t, w.Meta["lastSeed"])
-	require.Empty(t, w.Meta["secrets"])
-	for _, e := range w.Entries {
-		require.Equal(t, cipher.SecKey{}, e.Secret)
-	}
-}
-
-// checkWalletEntriesAndLastSeed confirms the wallet entries and lastSeed are derivied
-// from the seed.
-func checkWalletEntriesAndLastSeed(t *testing.T, w *wallet.Wallet) {
-	seed, ok := w.Meta["seed"]
-	require.True(t, ok)
-	newSeed, seckeys := cipher.GenerateDeterministicKeyPairsSeed([]byte(seed), len(w.Entries))
-	require.Len(t, seckeys, len(w.Entries))
-	for i, sk := range seckeys {
-		require.Equal(t, w.Entries[i].Secret, sk)
-		pk := cipher.PubKeyFromSecKey(sk)
-		require.Equal(t, w.Entries[i].Public, pk)
-	}
-	lastSeed, ok := w.Meta["lastSeed"]
-	require.True(t, ok)
-	require.Equal(t, lastSeed, hex.EncodeToString(newSeed))
-}
-
 // createWallet creates a wallet with rand seed.
 // Returns the generated wallet, seed and clean up function.
 func createWallet(t *testing.T, c *api.Client, encrypt bool, password string, seed string) (*api.WalletResponse, string, func()) {
@@ -3761,7 +3728,7 @@ func getWalletDir(t *testing.T, c *api.Client) string {
 }
 
 func TestDisableWalletApi(t *testing.T) {
-	if !doDisableWalletApi(t) {
+	if !doDisableWalletAPI(t) {
 		return
 	}
 
@@ -3783,7 +3750,7 @@ func TestDisableWalletApi(t *testing.T) {
 			name:      "get wallet",
 			method:    http.MethodGet,
 			endpoint:  "/api/v1/wallet?id=test.wlt",
-			expectErr: "403 Forbidden\n",
+			expectErr: "403 Forbidden",
 			code:      http.StatusForbidden,
 		},
 		{
@@ -3797,7 +3764,7 @@ func TestDisableWalletApi(t *testing.T) {
 				v.Add("scan", "1")
 				return strings.NewReader(v.Encode())
 			},
-			expectErr: "403 Forbidden\n",
+			expectErr: "403 Forbidden",
 			code:      http.StatusForbidden,
 		},
 		{
@@ -3809,14 +3776,14 @@ func TestDisableWalletApi(t *testing.T) {
 				v.Add("id", "test.wlt")
 				return strings.NewReader(v.Encode())
 			},
-			expectErr: "403 Forbidden\n",
+			expectErr: "403 Forbidden",
 			code:      http.StatusForbidden,
 		},
 		{
 			name:      "get wallet balance",
 			method:    http.MethodGet,
 			endpoint:  "/api/v1/wallet/balance?id=test.wlt",
-			expectErr: "403 Forbidden\n",
+			expectErr: "403 Forbidden",
 			code:      http.StatusForbidden,
 		},
 		{
@@ -3830,14 +3797,14 @@ func TestDisableWalletApi(t *testing.T) {
 				v.Add("dst", "2jBbGxZRGoQG1mqhPBnXnLTxK6oxsTf8os6")
 				return strings.NewReader(v.Encode())
 			},
-			expectErr: "403 Forbidden\n",
+			expectErr: "403 Forbidden",
 			code:      http.StatusForbidden,
 		},
 		{
 			name:      "get wallet unconfirmed transactions",
 			method:    http.MethodGet,
 			endpoint:  "/api/v1/wallet/transactions?id=test.wlt",
-			expectErr: "403 Forbidden\n",
+			expectErr: "403 Forbidden",
 			code:      http.StatusForbidden,
 		},
 		{
@@ -3850,35 +3817,35 @@ func TestDisableWalletApi(t *testing.T) {
 				v.Add("label", "label")
 				return strings.NewReader(v.Encode())
 			},
-			expectErr: "403 Forbidden\n",
+			expectErr: "403 Forbidden",
 			code:      http.StatusForbidden,
 		},
 		{
 			name:      "new seed",
 			method:    http.MethodGet,
 			endpoint:  "/api/v1/wallet/newSeed",
-			expectErr: "403 Forbidden\n",
+			expectErr: "403 Forbidden",
 			code:      http.StatusForbidden,
 		},
 		{
 			name:      "get wallets",
 			method:    http.MethodGet,
 			endpoint:  "/api/v1/wallets",
-			expectErr: "403 Forbidden\n",
+			expectErr: "403 Forbidden",
 			code:      http.StatusForbidden,
 		},
 		{
 			name:      "get wallets folder name",
 			method:    http.MethodGet,
 			endpoint:  "/api/v1/wallets/folderName",
-			expectErr: "403 Forbidden\n",
+			expectErr: "403 Forbidden",
 			code:      http.StatusForbidden,
 		},
 		{
 			name:      "main index.html 404 not found",
 			method:    http.MethodGet,
 			endpoint:  "/api/v1/",
-			expectErr: "404 Not Found\n",
+			expectErr: "404 Not Found",
 			code:      http.StatusNotFound,
 		},
 		{
@@ -3891,7 +3858,7 @@ func TestDisableWalletApi(t *testing.T) {
 				v.Add("password", "pwd")
 				return strings.NewReader(v.Encode())
 			},
-			expectErr: "403 Forbidden\n",
+			expectErr: "403 Forbidden",
 			code:      http.StatusForbidden,
 		},
 		{
@@ -3904,7 +3871,7 @@ func TestDisableWalletApi(t *testing.T) {
 				v.Add("password", "pwd")
 				return strings.NewReader(v.Encode())
 			},
-			expectErr: "403 Forbidden\n",
+			expectErr: "403 Forbidden",
 			code:      http.StatusForbidden,
 		},
 		{
@@ -3917,7 +3884,7 @@ func TestDisableWalletApi(t *testing.T) {
 				v.Add("password", "pwd")
 				return strings.NewReader(v.Encode())
 			},
-			expectErr: "403 Forbidden\n",
+			expectErr: "403 Forbidden",
 			code:      http.StatusForbidden,
 		},
 		{
@@ -3943,7 +3910,7 @@ func TestDisableWalletApi(t *testing.T) {
 					},
 				}
 			},
-			expectErr: "403 Forbidden\n",
+			expectErr: "403 Forbidden",
 			code:      http.StatusForbidden,
 		},
 	}
@@ -4036,11 +4003,11 @@ func TestLiveHealth(t *testing.T) {
 }
 
 func TestDisableGUIAPI(t *testing.T) {
-	if !doLiveOrStable(t) {
+	if !doDisableGUI(t) {
 		return
 	}
 
 	c := api.NewClient(nodeAddress())
 	err := c.Get("/", nil)
-	assertResponseError(t, err, http.StatusNotFound, "404 Not Found\n")
+	assertResponseError(t, err, http.StatusNotFound, "404 Not Found")
 }

@@ -84,6 +84,8 @@ function startSkycoin() {
   ]
   skycoin = childProcess.spawn(exe, args);
 
+  createWindow();
+
   skycoin.on('error', (e) => {
     dialog.showErrorBox('Failed to start skycoin', e.toString());
     app.quit();
@@ -166,7 +168,11 @@ function createWindow(url) {
     console.log('Cleared the stored cached data');
   });
 
-  win.loadURL(url);
+  if (url) {
+    win.loadURL(url);
+  } else {
+    win.loadURL('file://' + __dirname + '/splash/index.html');
+  }
 
   // Open the DevTools.
   // win.webContents.openDevTools();
@@ -206,11 +212,23 @@ function createWindow(url) {
     submenu: [
       {
         label: 'Wallets folder',
-        click: () => shell.showItemInFolder(walletsFolder),
+        click: () => {
+          if (walletsFolder) {
+            shell.showItemInFolder(walletsFolder)
+          } else {
+            shell.showItemInFolder(path.join(app.getPath("home"), '.skycoin', 'wallets'));
+          }
+        },
       },
       {
         label: 'Logs folder',
-        click: () => shell.showItemInFolder(walletsFolder.replace('wallets', 'logs')),
+        click: () => {
+          if (walletsFolder) {
+            shell.showItemInFolder(walletsFolder.replace('wallets', 'logs'))
+          } else {
+            shell.showItemInFolder(path.join(app.getPath("home"), '.skycoin', 'logs'));
+          }
+        },
       },
       {
         label: 'DevTools',
@@ -259,7 +277,11 @@ let walletsFolder = null;
 app.on('ready', startSkycoin);
 
 app.on('skycoin-ready', (e) => {
-  createWindow(e.url);
+  if (win) {
+    win.loadURL(e.url);
+  } else {
+    createWindow(e.url);
+  }
 
   axios
     .get(e.url + '/api/v1/wallets/folderName')

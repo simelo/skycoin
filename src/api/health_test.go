@@ -22,22 +22,32 @@ func TestHealthCheckHandler(t *testing.T) {
 		method       string
 		code         int
 		getHealthErr error
+		isCSRF       bool
 	}{
 		{
 			name:   "valid response",
 			method: http.MethodGet,
 			code:   http.StatusOK,
+			isCSRF: true,
 		},
 		{
 			name:   "403 method not allowed",
 			method: http.MethodPost,
-			code:   http.StatusMethodNotAllowed,
+			code:   http.StatusForbidden,
+			isCSRF: true,
 		},
 		{
 			name:         "gateway.GetHealth error",
 			method:       http.MethodGet,
 			code:         http.StatusInternalServerError,
 			getHealthErr: errors.New("GetHealth failed"),
+			isCSRF:       true,
+		},
+		{
+			name:   "Disable CSRF",
+			method: http.MethodGet,
+			code:   http.StatusNotFound,
+			isCSRF: false,
 		},
 	}
 
@@ -91,7 +101,14 @@ func TestHealthCheckHandler(t *testing.T) {
 				host:   configuredHost,
 				appLoc: ".",
 			}
-			handler := newServerMux(cfg, gateway, &CSRFStore{}, nil)
+
+			csrfStore := &CSRFStore{}
+			require.NoError(t, err)
+			csrfStore = &CSRFStore{
+				Enabled: tc.isCSRF,
+			}
+			setCSRFParameters(csrfStore, endpoint, req)
+			handler := newServerMux(cfg, gateway, csrfStore, nil)
 			handler.ServeHTTP(rr, req)
 			if tc.code != http.StatusOK {
 				require.Equal(t, tc.code, rr.Code)

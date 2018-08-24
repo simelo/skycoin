@@ -422,7 +422,7 @@ func newServerMux(c muxConfig, gateway Gatewayer, csrfStore *CSRFStore, rpc *web
 	webHandlerV2("/transaction/verify", verifyTxnHandler(gateway))
 
 	// Health check handler
-	webHandlerV1("/health", healthCheck(gateway))
+	webHandlerV1("/health", healthHandler(gateway, csrfStore))
 
 	// Returns transactions that match the filters.
 	// Method: GET
@@ -570,4 +570,14 @@ func versionHandler(gateway Gatewayer) http.HandlerFunc {
 
 		wh.SendJSONOr500(logger, w, gateway.GetBuildInfo())
 	}
+}
+
+func healthHandler(gateway Gatewayer, csrfStore *CSRFStore) http.HandlerFunc {
+	if !csrfStore.Enabled {
+		return func(w http.ResponseWriter, r *http.Request) {
+			wh.Error404(w, "Disable CSRF")
+			return
+		}
+	}
+	return healthCheck(gateway)
 }

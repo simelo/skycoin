@@ -2277,8 +2277,17 @@ func (vs *Visor) CreateTransactionDeprecated(wltID string, password []byte, coin
 	return txn, nil
 }
 
-// CreateTransaction creates a transaction based upon the parameters in wallet.CreateTransactionParams
+// CreateTransaction creates a signed transaction based upon the parameters in wallet.CreateTransactionParams
 func (vs *Visor) CreateTransaction(params wallet.CreateTransactionParams) (*coin.Transaction, []wallet.UxBalance, error) {
+	return createTransaction(vs, params, false)
+}
+
+// CreateTransaction creates an unsigned transaction based upon the parameters in wallet.CreateTransactionParams
+func (vs *Visor) CreateUnsignedTransaction(params wallet.CreateTransactionParams) (*coin.Transaction, []wallet.UxBalance, error) {
+	return createTransaction(vs, params, false)
+}
+
+func createTransaction(vs *Visor, params wallet.CreateTransactionParams, signTxn bool) (*coin.Transaction, []wallet.UxBalance, error) {
 	if err := params.Validate(); err != nil {
 		return nil, nil, err
 	}
@@ -2309,12 +2318,16 @@ func (vs *Visor) CreateTransaction(params wallet.CreateTransactionParams) (*coin
 		return nil, nil, err
 	}
 
-	// Create and sign transaction
+	// Create (un)signed transaction
 	var txn *coin.Transaction
 	var inputs []wallet.UxBalance
 	if err := vs.Wallets.ViewWallet(w, params.Wallet.Password, func(w *wallet.Wallet) error {
 		var err error
-		txn, inputs, err = w.CreateAndSignTransactionAdvanced(params, auxs, head.Time())
+		if signTxn {
+			txn, inputs, err = w.CreateAndSignTransactionAdvanced(params, auxs, head.Time())
+		} else {
+			txn, inputs, err = w.CreateUnsignedTransactionAdvanced(params, auxs, head.Time())
+		}
 		return err
 	}); err != nil {
 		logger.WithError(err).Error("CreateAndSignTransactionAdvanced failed")

@@ -16,6 +16,7 @@ import (
 type Gatewayer interface {
 	Spend(wltID string, password []byte, coins uint64, dest cipher.Address) (*coin.Transaction, error)
 	CreateTransaction(w wallet.CreateTransactionParams) (*coin.Transaction, []wallet.UxBalance, error)
+	CreateUnsignedTransaction(w wallet.CreateTransactionParams) (*coin.Transaction, []wallet.UxBalance, error)
 	GetWalletBalance(wltID string) (wallet.BalancePair, wallet.AddressBalance, error)
 	GetWallet(wltID string) (*wallet.Wallet, error)
 	GetWallets() (wallet.Wallets, error)

@@ -1032,10 +1032,21 @@ func (w *Wallet) CreateAndSignTransaction(auxs coin.AddressUxOuts, headTime, coi
 	return &txn, nil
 }
 
+// CreateUnsignedTransactionAdvanced creates an unsigned transaction based upon CreateTransactionParams.
+// Set the password as nil if the wallet is not encrypted, otherwise the password must be provided.
+// NOTE: Caller must ensure that auxs correspond to params.Wallet.Addresses and params.Wallet.UxOuts options
+func (w *Wallet) CreateUnsignedTransactionAdvanced(params CreateTransactionParams, auxs coin.AddressUxOuts, headTime uint64) (*coin.Transaction, []UxBalance, error) {
+	return createTransactionAdvanced(w, params, auxs, headTime, false)
+}
+
 // CreateAndSignTransactionAdvanced creates and signs a transaction based upon CreateTransactionParams.
 // Set the password as nil if the wallet is not encrypted, otherwise the password must be provided.
 // NOTE: Caller must ensure that auxs correspond to params.Wallet.Addresses and params.Wallet.UxOuts options
 func (w *Wallet) CreateAndSignTransactionAdvanced(params CreateTransactionParams, auxs coin.AddressUxOuts, headTime uint64) (*coin.Transaction, []UxBalance, error) {
+	return createTransactionAdvanced(w, params, auxs, headTime, true)
+}
+
+func createTransactionAdvanced(w *Wallet, params CreateTransactionParams, auxs coin.AddressUxOuts, headTime uint64, signTxn bool) (*coin.Transaction, []UxBalance, error) {
 	if err := params.Validate(); err != nil {
 		return nil, nil, err
 	}
@@ -1259,7 +1270,7 @@ func (w *Wallet) CreateAndSignTransactionAdvanced(params CreateTransactionParams
 			return nil, nil, errors.New("share factor is 1.0 but changeHours > 0 unexpectedly")
 		}
 		params.HoursSelection.ShareFactor = &oneDecimal
-		return w.CreateAndSignTransactionAdvanced(params, auxs, headTime)
+		return createTransactionAdvanced(w, params, auxs, headTime, signTxn)
 	}
 
 	if changeCoins > 0 {
@@ -1294,8 +1305,10 @@ func (w *Wallet) CreateAndSignTransactionAdvanced(params CreateTransactionParams
 		txn.PushOutput(changeAddress, changeCoins, changeHours)
 	}
 
-	txn.SignInputs(toSign)
-	txn.UpdateHeader()
+	if signTxn {
+		txn.SignInputs(toSign)
+		txn.UpdateHeader()
+	}
 
 	inputs := make([]UxBalance, len(txn.In))
 	for i, h := range txn.In {

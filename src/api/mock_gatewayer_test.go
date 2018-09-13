@@ -47,6 +47,38 @@ func (_m *MockGatewayer) CreateTransaction(w wallet.CreateTransactionParams) (*c
 	return r0, r1, r2
 }
 
+// CreateUnsignedTransaction provides a mock function with given fields: w
+func (_m *MockGatewayer) CreateUnsignedTransaction(w wallet.CreateTransactionParams) (*coin.Transaction, []wallet.UxBalance, error) {
+	ret := _m.Called(w)
+
+	var r0 *coin.Transaction
+	if rf, ok := ret.Get(0).(func(wallet.CreateTransactionParams) *coin.Transaction); ok {
+		r0 = rf(w)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*coin.Transaction)
+		}
+	}
+
+	var r1 []wallet.UxBalance
+	if rf, ok := ret.Get(1).(func(wallet.CreateTransactionParams) []wallet.UxBalance); ok {
+		r1 = rf(w)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]wallet.UxBalance)
+		}
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(wallet.CreateTransactionParams) error); ok {
+		r2 = rf(w)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
 // CreateWallet provides a mock function with given fields: wltName, options
 func (_m *MockGatewayer) CreateWallet(wltName string, options wallet.Options) (*wallet.Wallet, error) {
 	ret := _m.Called(wltName, options)

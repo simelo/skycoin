@@ -353,7 +353,9 @@ func newServerMux(c muxConfig, gateway Gatewayer, csrfStore *CSRFStore, rpc *web
 	webHandlerV1("/wallet/spend", walletSpendHandler(gateway))
 
 	// Creates a transaction from a wallet
-	webHandlerV1("/wallet/transaction", createTransactionHandler(gateway))
+	webHandlerV1("/wallet/transaction", createTransactionHandler(gateway, true))
+	// Creates unsigned transaction from a wallet
+	webHandlerV2("/wallet/unsignedtxn", createTransactionHandler(gateway, false))
 
 	// GET Arguments:
 	//      id: Wallet ID

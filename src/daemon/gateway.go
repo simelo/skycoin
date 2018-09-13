@@ -882,8 +882,17 @@ func (gw *Gateway) Spend(wltID string, password []byte, coins uint64, dest ciphe
 	return txn, nil
 }
 
-// CreateTransaction creates a transaction based upon parameters in wallet.CreateTransactionParams
+// CreateUnsignedTransaction creates a signed transaction based upon parameters in wallet.CreateTransactionParams
+func (gw *Gateway) CreateUnsignedTransaction(params wallet.CreateTransactionParams) (*coin.Transaction, []wallet.UxBalance, error) {
+	return createTransaction(gw, params, false)
+}
+
+// CreateTransaction creates a signed transaction based upon parameters in wallet.CreateTransactionParams
 func (gw *Gateway) CreateTransaction(params wallet.CreateTransactionParams) (*coin.Transaction, []wallet.UxBalance, error) {
+	return createTransaction(gw, params, true)
+}
+
+func createTransaction(gw *Gateway, params wallet.CreateTransactionParams, signTxn bool) (*coin.Transaction, []wallet.UxBalance, error) {
 	if !gw.Config.EnableWalletAPI {
 		return nil, nil, wallet.ErrWalletAPIDisabled
 	}
@@ -893,7 +902,11 @@ func (gw *Gateway) CreateTransaction(params wallet.CreateTransactionParams) (*co
 	var err error
 
 	gw.strand("CreateTransaction", func() {
-		txn, inputs, err = gw.v.CreateTransaction(params)
+		if signTxn {
+			txn, inputs, err = gw.v.CreateTransaction(params)
+		} else {
+			txn, inputs, err = gw.v.CreateUnsignedTransaction(params)
+		}
 	})
 
 	if err != nil {

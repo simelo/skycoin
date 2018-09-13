@@ -267,6 +267,7 @@ type createTransactionRequestWallet struct {
 	UxOuts    []wh.SHA256  `json:"unspents,omitempty"`
 	Addresses []wh.Address `json:"addresses,omitempty"`
 	Password  string       `json:"password"`
+	SignTxn   bool         `json:"sign_txn"` // FIXME: OmitFalse ?
 }
 
 // hoursSelection defines options for hours distribution
@@ -465,11 +466,12 @@ func (r createTransactionRequest) ToWalletParams() wallet.CreateTransactionParam
 	}
 }
 
-// createTransactionHandler creates a signed transaction
+// createTransactionHandler creates (un)signed transactions
 // Method: POST
 // URI: /api/v1/wallet/transaction
+// URI: /api/v2/wallet/unsignedtxn
 // Args: JSON body
-func createTransactionHandler(gateway Gatewayer) http.HandlerFunc {
+func createTransactionHandler(gateway Gatewayer, signTxn bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			wh.Error405(w)
@@ -495,7 +497,13 @@ func createTransactionHandler(gateway Gatewayer) http.HandlerFunc {
 			return
 		}
 
-		txn, inputs, err := gateway.CreateTransaction(params.ToWalletParams())
+		var txn *coin.Transaction
+		var inputs []wallet.UxBalance
+		if signTxn {
+			txn, inputs, err = gateway.CreateTransaction(params.ToWalletParams())
+		} else {
+			txn, inputs, err = gateway.CreateUnsignedTransaction(params.ToWalletParams())
+		}
 		if err != nil {
 			switch err.(type) {
 			case wallet.Error:

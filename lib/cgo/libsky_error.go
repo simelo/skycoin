@@ -214,8 +214,6 @@ const (
 	SKY_ErrDisconnectMalformedMessage
 	// SKY_ErrDisconnectUnknownMessage unknow message
 	SKY_ErrDisconnectUnknownMessage
-	// SKY_ErrDisconnectUnexpectedError  unexpected error
-	SKY_ErrDisconnectUnexpectedError
 	// SKY_ErrConnectionPoolClosed error message indicates the connection pool is closed
 	SKY_ErrConnectionPoolClosed
 	// SKY_ErrWriteQueueFull write queue is full
@@ -228,8 +226,6 @@ const (
 	SKY_ErrDisconnectVersionNotSupported
 	// SKY_ErrDisconnectIntroductionTimeout timeout
 	SKY_ErrDisconnectIntroductionTimeout
-	// SKY_ErrDisconnectVersionSendFailed version send failed
-	SKY_ErrDisconnectVersionSendFailed
 	// SKY_ErrDisconnectIsBlacklisted is blacklisted
 	SKY_ErrDisconnectIsBlacklisted
 	// SKY_ErrDisconnectSelf self connnect
@@ -242,8 +238,8 @@ const (
 	SKY_ErrDisconnectNoIntroduction
 	// SKY_ErrDisconnectIPLimitReached ip limit reached
 	SKY_ErrDisconnectIPLimitReached
-	// SKY_ErrDisconnectIncomprehensibleError this is returned when a seemingly impossible error is encountered
-	SKY_ErrDisconnectIncomprehensibleError
+	// SKY_ErrDisconnectUnexpectedError this is returned when a seemingly impossible error is encountered
+	SKY_ErrDisconnectUnexpectedError
 	// SKY_ErrDisconnectMaxDefaultConnectionReached Maximum number of default connections was reached
 	SKY_ErrDisconnectMaxDefaultConnectionReached // nolint megacheck
 	// SKY_ErrDisconnectMaxOutgoingConnectionsReached is returned when connection pool size is greater than the maximum allowed
@@ -456,32 +452,30 @@ var (
 		// daemon
 		// Removed in 34ad39ddb350
 		// gnet.ErrMaxDefaultConnectionsReached:           SKY_ErrMaxDefaultConnectionsReached,
-		pex.ErrPeerlistFull:                       SKY_ErrPeerlistFull,
-		pex.ErrInvalidAddress:                     SKY_ErrInvalidAddress,
-		pex.ErrNoLocalhost:                        SKY_ErrNoLocalhost,
-		pex.ErrNotExternalIP:                      SKY_ErrNotExternalIP,
-		pex.ErrPortTooLow:                         SKY_ErrPortTooLow,
-		pex.ErrBlacklistedAddress:                 SKY_ErrBlacklistedAddress,
-		gnet.ErrDisconnectReadFailed:              SKY_ErrDisconnectReadFailed,
-		gnet.ErrDisconnectWriteFailed:             SKY_ErrDisconnectWriteFailed,
-		gnet.ErrDisconnectSetReadDeadlineFailed:   SKY_ErrDisconnectSetReadDeadlineFailed,
-		gnet.ErrDisconnectInvalidMessageLength:    SKY_ErrDisconnectInvalidMessageLength,
-		gnet.ErrDisconnectMalformedMessage:        SKY_ErrDisconnectMalformedMessage,
-		gnet.ErrDisconnectUnknownMessage:          SKY_ErrDisconnectUnknownMessage,
-		gnet.ErrDisconnectUnexpectedError:         SKY_ErrDisconnectUnexpectedError,
-		gnet.ErrConnectionPoolClosed:              SKY_ErrConnectionPoolClosed,
-		gnet.ErrWriteQueueFull:                    SKY_ErrWriteQueueFull,
-		gnet.ErrNoReachableConnections:            SKY_ErrNoReachableConnections,
-		daemon.ErrDisconnectVersionNotSupported:   SKY_ErrDisconnectVersionNotSupported,
-		daemon.ErrDisconnectIntroductionTimeout:   SKY_ErrDisconnectIntroductionTimeout,
-		daemon.ErrDisconnectVersionSendFailed:     SKY_ErrDisconnectVersionSendFailed,
-		daemon.ErrDisconnectIsBlacklisted:         SKY_ErrDisconnectIsBlacklisted,
-		daemon.ErrDisconnectSelf:                  SKY_ErrDisconnectSelf,
-		daemon.ErrDisconnectConnectedTwice:        SKY_ErrDisconnectConnectedTwice,
-		daemon.ErrDisconnectIdle:                  SKY_ErrDisconnectIdle,
-		daemon.ErrDisconnectNoIntroduction:        SKY_ErrDisconnectNoIntroduction,
-		daemon.ErrDisconnectIPLimitReached:        SKY_ErrDisconnectIPLimitReached,
-		daemon.ErrDisconnectIncomprehensibleError: SKY_ErrDisconnectIncomprehensibleError,
+		pex.ErrPeerlistFull:                     SKY_ErrPeerlistFull,
+		pex.ErrInvalidAddress:                   SKY_ErrInvalidAddress,
+		pex.ErrNoLocalhost:                      SKY_ErrNoLocalhost,
+		pex.ErrNotExternalIP:                    SKY_ErrNotExternalIP,
+		pex.ErrPortTooLow:                       SKY_ErrPortTooLow,
+		pex.ErrBlacklistedAddress:               SKY_ErrBlacklistedAddress,
+		gnet.ErrDisconnectReadFailed:            SKY_ErrDisconnectReadFailed,
+		gnet.ErrDisconnectWriteFailed:           SKY_ErrDisconnectWriteFailed,
+		gnet.ErrDisconnectSetReadDeadlineFailed: SKY_ErrDisconnectSetReadDeadlineFailed,
+		gnet.ErrDisconnectInvalidMessageLength:  SKY_ErrDisconnectInvalidMessageLength,
+		gnet.ErrDisconnectMalformedMessage:      SKY_ErrDisconnectMalformedMessage,
+		gnet.ErrDisconnectUnknownMessage:        SKY_ErrDisconnectUnknownMessage,
+		gnet.ErrConnectionPoolClosed:            SKY_ErrConnectionPoolClosed,
+		gnet.ErrWriteQueueFull:                  SKY_ErrWriteQueueFull,
+		gnet.ErrNoReachableConnections:          SKY_ErrNoReachableConnections,
+		daemon.ErrDisconnectVersionNotSupported: SKY_ErrDisconnectVersionNotSupported,
+		daemon.ErrDisconnectIntroductionTimeout: SKY_ErrDisconnectIntroductionTimeout,
+		daemon.ErrDisconnectIsBlacklisted:       SKY_ErrDisconnectIsBlacklisted,
+		daemon.ErrDisconnectSelf:                SKY_ErrDisconnectSelf,
+		daemon.ErrDisconnectConnectedTwice:      SKY_ErrDisconnectConnectedTwice,
+		daemon.ErrDisconnectIdle:                SKY_ErrDisconnectIdle,
+		daemon.ErrDisconnectNoIntroduction:      SKY_ErrDisconnectNoIntroduction,
+		daemon.ErrDisconnectIPLimitReached:      SKY_ErrDisconnectIPLimitReached,
+		daemon.ErrDisconnectUnexpectedError:     SKY_ErrDisconnectUnexpectedError,
 		// Removed
 		//		daemon.ErrDisconnectMaxDefaultConnectionReached:   SKY_ErrDisconnectMaxDefaultConnectionReached,
 		daemon.ErrDisconnectMaxOutgoingConnectionsReached: SKY_ErrDisconnectMaxOutgoingConnectionsReached,

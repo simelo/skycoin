@@ -224,6 +224,8 @@ Response:
         "branch": "develop"
     },
     "open_connections": 8,
+    "outgoing_connections": 5,
+    "incoming_connections": 3,
     "uptime": "6m30.629057248s",
     "csrf_enabled": true,
     "csp_enabled": true,
@@ -3591,7 +3593,11 @@ API sets: `STATUS`, `READ`
 ```
 URI: /api/v1/network/connections
 Method: GET
+Args:
+	type: [optional] "outgoing" or "incoming"
 ```
+
+Returns all connections if `type` is not specified, otherwise filters connection by the `type` category.
 
 Example:
 
@@ -3631,7 +3637,7 @@ Result:
             "address": "185.120.34.60:6000",
             "last_sent": 1520675754,
             "last_received": 1520675754,
-            "outgoing": false,
+            "outgoing": true,
             "introduced": true,
             "mirror": 1931713869,
             "height": 180,

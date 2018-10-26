@@ -795,21 +795,19 @@ func ExampleAnnounceTxnsMessage() {
 	// 0x004c |
 }
 
-func ExampleRejectMessage() {
+func ExampleDisconnectMessage() {
 	defer gnet.EraseMessages()
 	setupMsgEncoding()
 
-	rejectedMessage := NewIntroductionMessage(0x0123456, 0x789ABCD, 6000, cipher.PubKey{})
-	message := NewRejectMessage(rejectedMessage, gnet.ErrDisconnectWriteFailed, "ExampleRejectWithPeersMessage")
-	fmt.Println("RejectMessage:")
+	message := NewDisconnectMessage(ErrDisconnectIdle)
+	fmt.Println("DisconnectMessage:")
 	var mai = NewMessagesAnnotationsIterator(message)
 	w := bufio.NewWriter(os.Stdout)
 	err := NewFromIterator(gnet.EncodeMessage(message), &mai, w)
 	if err != nil {
 		fmt.Println(err)
 	}
-	// Output:
-	// RejectMessage:
+	// DisconnectMessage:
 	// 0x0000 | 31 00 00 00 ....................................... Length
 	// 0x0004 | 52 4a 43 54 ....................................... Prefix
 	// 0x0008 | 49 4e 54 52 ....................................... TargetPrefix

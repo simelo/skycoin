@@ -6,24 +6,16 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
-	"reflect"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/coin"
 	"github.com/skycoin/skycoin/src/daemon/gnet"
 	"github.com/skycoin/skycoin/src/daemon/pex"
 	"github.com/skycoin/skycoin/src/util/iputil"
-)
-
-var (
-	// Every rejection message prefix must start with "RJCT" prefix
-	rejectPrefix = [...]byte{82, 74, 67, 84}
-	// ErrRecvReject disconnect since peer sent RJCT message
-	ErrRecvReject gnet.DisconnectReason = errors.New("Disconnect: Message rejected by peer")
-	// ErrSendReject disconnect since RJCT message was sent to peer
-	ErrSendReject gnet.DisconnectReason = errors.New("Disconnect: Reject message sent to peer")
 )
 
 // Message represent a packet to be serialized over the network by
@@ -65,7 +57,7 @@ func getMessageConfigs() []MessageConfig {
 		NewMessageConfig("GETT", GetTxnsMessage{}),
 		NewMessageConfig("GIVT", GiveTxnsMessage{}),
 		NewMessageConfig("ANNT", AnnounceTxnsMessage{}),
-		NewMessageConfig("RJCT", RejectMessage{}),
+		NewMessageConfig("DISC", DisconnectMessage{}),
 	}
 }
 
@@ -234,16 +226,14 @@ func (gpm *GivePeersMessage) Process(d Daemoner) {
 
 // IntroductionMessage jan IntroductionMessage is sent on first connect by both parties
 type IntroductionMessage struct {
-	// Mirror is a random value generated on client startup that is used
-	// to identify self-connections
+	c *gnet.MessageContext `enc:"-"`
+
+	// Mirror is a random value generated on client startup that is used to identify self-connections
 	Mirror uint32
 	// Port is the port that this client is listening on
 	Port uint16
 	// Protocol version
 	Version int32
-	c       *gnet.MessageContext `enc:"-"`
-	// We validate the message in Handle() and cache the result for Process()
-	validationError error `enc:"-"` // skip it during encoding
 	// Extra is extra bytes added to the struct to accommodate multiple versions of this packet.
 	// Currently it contains the blockchain pubkey but will accept a client that does not provide it.
 	Extra []byte `enc:",omitempty"`
@@ -263,149 +253,116 @@ func NewIntroductionMessage(mirror uint32, version int32, port uint16, pubkey ci
 // need to control the DisconnectReason sent back to gnet.  We still implement
 // Process(), where we do modifications that are not threadsafe
 func (intro *IntroductionMessage) Handle(mc *gnet.MessageContext, daemon interface{}) error {
-	d := daemon.(Daemoner)
-
-	err := func() error {
-		// Disconnect if this is a self connection (we have the same mirror value)
-		if intro.Mirror == d.Mirror() {
-			logger.Infof("Remote mirror value %v matches ours", intro.Mirror)
-			if err := d.Disconnect(mc.Addr, ErrDisconnectSelf); err != nil {
-				logger.WithError(err).WithField("addr", mc.Addr).Warning("Disconnect")
-			}
-			return ErrDisconnectSelf
-		}
-
-		// Disconnect if peer version is not within the supported range
-		dc := d.DaemonConfig()
-		if intro.Version < dc.MinProtocolVersion {
-			logger.Infof("%s protocol version %d below minimum supported protocol version %d. Disconnecting.", mc.Addr, intro.Version, dc.MinProtocolVersion)
-			if err := d.Disconnect(mc.Addr, ErrDisconnectVersionNotSupported); err != nil {
-				logger.WithError(err).WithField("addr", mc.Addr).Warning("Disconnect")
-			}
-			return ErrDisconnectVersionNotSupported
-		}
-
-		logger.Infof("%s verified for version %d", mc.Addr, intro.Version)
-
-		// v25 Checks the blockchain pubkey, would accept message with no Pubkey
-		// v26 would check the blockchain pubkey and reject if not matched or not provided
-		if len(intro.Extra) > 0 {
-			var bcPubKey cipher.PubKey
-			if len(intro.Extra) < len(bcPubKey) {
-				logger.Infof("Extra data length does not meet the minimum requirement")
-				if err := d.Disconnect(mc.Addr, ErrDisconnectInvalidExtraData); err != nil {
-					logger.WithError(err).WithField("addr", mc.Addr).Warning("Disconnect")
-				}
-				return ErrDisconnectInvalidExtraData
-			}
-			copy(bcPubKey[:], intro.Extra[:len(bcPubKey)])
-
-			if d.BlockchainPubkey() != bcPubKey {
-				logger.Infof("Blockchain pubkey does not match, local: %s, remote: %s", d.BlockchainPubkey().Hex(), bcPubKey.Hex())
-				if err := d.Disconnect(mc.Addr, ErrDisconnectBlockchainPubkeyNotMatched); err != nil {
-					logger.WithError(err).WithField("addr", mc.Addr).Warning("Disconnect")
-				}
-				return ErrDisconnectBlockchainPubkeyNotMatched
-			}
-		}
-
-		// only solicited connection can be added to exchange peer list, because accepted
-		// connection may not have an incoming port
-		ip, port, err := iputil.SplitAddr(mc.Addr)
-		if err != nil {
-			// This should never happen, but the program should still work if it does
-			logger.Errorf("Invalid Addr() for connection: %s", mc.Addr)
-			if err := d.Disconnect(mc.Addr, ErrDisconnectIncomprehensibleError); err != nil {
-				logger.WithError(err).WithField("addr", mc.Addr).Warning("Disconnect")
-			}
-			return ErrDisconnectIncomprehensibleError
-		}
-
-		// Checks if the introduction message is from outgoing connection.
-		// It's outgoing connection if port == intro.Port, as the incoming
-		// connection's port is a random port, it's different from the port
-		// in introduction message.
-		if port == intro.Port {
-			if err := d.SetHasIncomingPort(mc.Addr); err != nil {
-				logger.Errorf("Failed to set peer has incoming port status, %v", err)
-			}
-		} else {
-			if err := d.AddPeer(fmt.Sprintf("%s:%d", ip, intro.Port)); err != nil {
-				logger.Errorf("Failed to add peer: %v", err)
-			}
-		}
-
-		// Disconnect if connected twice to the same peer (judging by ip:mirror)
-		knownPort, exists := d.GetMirrorPort(mc.Addr, intro.Mirror)
-		if exists {
-			logger.Infof("%s is already connected on port %d", mc.Addr, knownPort)
-			if err := d.Disconnect(mc.Addr, ErrDisconnectConnectedTwice); err != nil {
-				logger.WithError(err).WithField("addr", mc.Addr).Warning("Disconnect")
-			}
-			return ErrDisconnectConnectedTwice
-		}
-		return nil
-	}()
-
-	intro.validationError = err
 	intro.c = mc
-
-	if err != nil {
-		d.IncreaseRetryTimes(mc.Addr)
-		d.RemoveFromExpectingIntroductions(mc.Addr)
-		return err
-	}
-
-	err = d.RecordMessageEvent(intro, mc)
-	d.ResetRetryTimes(mc.Addr)
-	return err
+	return daemon.(Daemoner).RecordMessageEvent(intro, mc)
 }
 
 // Process an event queued by Handle()
 func (intro *IntroductionMessage) Process(d Daemoner) {
-	d.RemoveFromExpectingIntroductions(intro.c.Addr)
-	if intro.validationError != nil {
-		if intro.validationError == pex.ErrPeerlistFull {
-			peers := d.RandomExchangeable(d.PexConfig().ReplyCount)
-			givpMsg := NewGivePeersMessage(peers)
-			if err := d.SendMessage(intro.c.Addr, givpMsg); err != nil {
-				logger.WithError(err).WithField("addr", intro.c.Addr).Error("Send GivePeersMessage failed")
-			}
-			rjctMsg := NewRejectMessage(intro, pex.ErrPeerlistFull, "")
-			if err := d.SendMessage(intro.c.Addr, rjctMsg); err != nil {
-				logger.Errorf("Send RejectMessage to %s failed: %v", intro.c.Addr, err)
-			}
-		}
+	addr := intro.c.Addr
 
+	d.RemoveFromExpectingIntroductions(addr)
+
+	ip, port, err := intro.verify(d)
+	if err != nil {
+		d.IncreaseRetryTimes(addr)
+		if err := d.Disconnect(addr, err); err != nil {
+			logger.WithField("addr", addr).WithError(err).Warning("Disconnect")
+		}
 		return
 	}
+
 	// Add the remote peer with their chosen listening port
-	a := intro.c.Addr
+	// Checks if the introduction message is from outgoing connection.
+	// It's outgoing connection if port == intro.Port, as the incoming
+	// connection's port is a random port, it's different from the port
+	// in introduction message.
+	if port == intro.Port {
+		if err := d.SetHasIncomingPort(addr); err != nil {
+			logger.WithField("addr", addr).WithError(err).Error("SetHasIncomingPort failed")
+		}
+	} else {
+		if err := d.AddPeer(fmt.Sprintf("%s:%d", ip, intro.Port)); err != nil {
+			logger.WithField("addr", addr).WithError(err).Errorf("AddPeer failed")
+		}
+	}
 
 	// Record their listener, to avoid double connections
-	err := d.RecordConnectionMirror(a, intro.Mirror)
-	if err != nil {
+	if err := d.RecordConnectionMirror(addr, intro.Mirror); err != nil {
 		// This should never happen, but the program should not allow itself
 		// to be corrupted in case it does
-		logger.Errorf("Invalid port for connection %s", a)
-		if err := d.Disconnect(intro.c.Addr, ErrDisconnectIncomprehensibleError); err != nil {
-			logger.WithError(err).WithField("addr", intro.c.Addr).Warning("Disconnect")
+		logger.WithField("addr", addr).WithError(err).Errorf("Invalid port for connection")
+		d.IncreaseRetryTimes(addr)
+		if err := d.Disconnect(addr, ErrDisconnectUnexpectedError); err != nil {
+			logger.WithField("addr", addr).WithError(err).Warning("Disconnect")
 		}
 		return
 	}
 
+	logger.WithField("addr", addr).Infof("Peer verified for protocol version %d", intro.Version)
+
+	d.ResetRetryTimes(addr)
+
 	// Request blocks immediately after they're confirmed
-	err = d.RequestBlocksFromAddr(intro.c.Addr)
-	if err == nil {
-		logger.Debugf("Successfully requested blocks from %s", intro.c.Addr)
+	if err := d.RequestBlocksFromAddr(addr); err != nil {
+		logger.WithField("addr", addr).WithError(err).Warning("RequestBlocksFromAddr failed")
 	} else {
-		logger.Warning(err)
+		logger.WithField("addr", addr).Debug("Successfully requested blocks from peer")
 	}
 
 	// Announce unconfirmed txns
 	if err := d.AnnounceAllTxns(); err != nil {
 		logger.WithError(err).Warning("AnnounceAllTxns failed")
 	}
+}
+
+func (intro *IntroductionMessage) verify(d Daemoner) (string, uint16, error) {
+	addr := intro.c.Addr
+
+	ip, port, err := iputil.SplitAddr(addr)
+	if err != nil {
+		// This should never happen, but the program should still work if it does
+		logger.WithField("addr", addr).Error("Invalid addr")
+		return "", 0, ErrDisconnectUnexpectedError
+	}
+
+	// Disconnect if this is a self connection (we have the same mirror value)
+	if intro.Mirror == d.Mirror() {
+		logger.WithField("addr", addr).Infof("Remote mirror value %d matches ours", intro.Mirror)
+		return "", 0, ErrDisconnectSelf
+	}
+
+	// Disconnect if peer version is not within the supported range
+	dc := d.DaemonConfig()
+	if intro.Version < dc.MinProtocolVersion {
+		logger.WithField("addr", addr).Infof("protocol version %d below minimum supported protocol version %d. Disconnecting.", intro.Version, dc.MinProtocolVersion)
+		return "", 0, ErrDisconnectVersionNotSupported
+	}
+
+	// v25 Checks the blockchain pubkey, would accept message with no Pubkey
+	// v26 would check the blockchain pubkey and reject if not matched or not provided
+	if len(intro.Extra) > 0 {
+		var bcPubKey cipher.PubKey
+		if len(intro.Extra) < len(bcPubKey) {
+			logger.WithField("addr", addr).Infof("Extra data length does not meet the minimum requirement")
+			return "", 0, ErrDisconnectInvalidExtraData
+		}
+		copy(bcPubKey[:], intro.Extra[:len(bcPubKey)])
+
+		if d.BlockchainPubkey() != bcPubKey {
+			logger.WithField("addr", addr).Infof("Blockchain pubkey does not match, local: %s, remote: %s", d.BlockchainPubkey().Hex(), bcPubKey.Hex())
+			return "", 0, ErrDisconnectBlockchainPubkeyNotMatched
+		}
+	}
+
+	// Disconnect if connected twice to the same peer (judging by ip:mirror)
+	knownPort, exists := d.GetMirrorPort(addr, intro.Mirror)
+	if exists {
+		logger.WithField("addr", addr).Infof("Already connected on port %d", knownPort)
+		return "", 0, ErrDisconnectConnectedTwice
+	}
+
+	return ip, port, nil
 }
 
 // PingMessage Sent to keep a connection alive. A PongMessage is sent in reply.
@@ -443,72 +400,42 @@ func (pong *PongMessage) Handle(mc *gnet.MessageContext, daemon interface{}) err
 	return nil
 }
 
-// DisconnectPeerMessage sent to peer immediately before disconnection
-type DisconnectPeerMessage interface {
-	// PeerAddress to disconnect
-	PeerAddress() string
-	// ErrorReason leading to disconnection
-	ErrorReason() gnet.DisconnectReason
-}
+// DisconnectMessage sent to a peer before disconnecting, indicating the reason for disconnect
+type DisconnectMessage struct {
+	c      *gnet.MessageContext  `enc:"-"`
+	reason gnet.DisconnectReason `enc:"-"`
 
-// RejectMessage sent to inform peers of a protocol failure.
-// Whenever possible the node should send back prior to this
-// other message including data useful for peer recovery, especially
-// before disconnecting it
-//
-// Must never Reject a Reject message (infinite loop)
-type RejectMessage struct {
-	// Prefix of the (previous) message that's been rejected
-	TargetPrefix gnet.MessagePrefix
 	// Error code
-	ErrorCode uint32
-	// Reason message. Included only in very particular cases
-	Reason string
+	ReasonCode uint16
+
 	// Reserved for future use
 	Reserved []byte
-	c        *gnet.MessageContext `enc:"-"`
 }
 
-// NewRejectMessage creates message sent to reject previously received message
-func NewRejectMessage(msg gnet.Message, err error, reason string) *RejectMessage {
-	t := reflect.Indirect(reflect.ValueOf(msg)).Type()
-	prefix, exists := gnet.MessageIDMap[t]
-	if !exists {
-		logger.Panicf("Rejecting unknown message type %s", t)
+// NewDisconnectMessage creates message sent to reject previously received message
+func NewDisconnectMessage(reason gnet.DisconnectReason) *DisconnectMessage {
+	return &DisconnectMessage{
+		reason:     reason,
+		ReasonCode: DisconnectReasonToCode(reason),
+		Reserved:   nil,
 	}
-	// Infinite loop. Never reject RJCT message
-	if reflect.DeepEqual(prefix[:], rejectPrefix[:]) {
-		logger.WithField("gnetmsg", prefix).Panicf("Message type %s may not be rejected", t)
-	}
-
-	return &RejectMessage{
-		TargetPrefix: prefix,
-		ErrorCode:    GetErrorCode(err),
-		Reason:       reason,
-		Reserved:     nil,
-	}
-}
-
-// PeerAddress extracted from message context
-func (rpm *RejectMessage) PeerAddress() string {
-	return rpm.c.Addr
-}
-
-// ErrorReason disconnect peer after sending RejectMessage
-func (rpm *RejectMessage) ErrorReason() gnet.DisconnectReason {
-	return ErrSendReject
 }
 
 // Handle an event queued by Handle()
-func (rpm *RejectMessage) Handle(mc *gnet.MessageContext, daemon interface{}) error {
-	rpm.c = mc
-	return daemon.(Daemoner).RecordMessageEvent(rpm, mc)
+func (dm *DisconnectMessage) Handle(mc *gnet.MessageContext, daemon interface{}) error {
+	dm.c = mc
+	return daemon.(Daemoner).RecordMessageEvent(dm, mc)
 }
 
 // Process Recover from message rejection state
-func (rpm *RejectMessage) Process(d Daemoner) {
-	if err := d.Disconnect(rpm.c.Addr, ErrRecvReject); err != nil {
-		logger.WithError(err).WithField("addr", rpm.c.Addr).Warning("Failed to disconnect peer")
+func (dm *DisconnectMessage) Process(d Daemoner) {
+	logger.Critical().WithFields(logrus.Fields{
+		"addr":   dm.c.Addr,
+		"code":   dm.ReasonCode,
+		"reason": DisconnectCodeToReason(dm.ReasonCode),
+	}).Infof("DisconnectMessage received")
+	if err := d.DisconnectNow(dm.c.Addr, ErrDisconnectReceivedDisconnect); err != nil {
+		logger.WithError(err).WithField("addr", dm.c.Addr).Warning("DisconnectNow")
 	}
 }
 
@@ -528,19 +455,13 @@ func NewGetBlocksMessage(lastBlock uint64, requestedBlocks uint64) *GetBlocksMes
 }
 
 // Handle handles message
-func (gbm *GetBlocksMessage) Handle(mc *gnet.MessageContext,
-	daemon interface{}) error {
+func (gbm *GetBlocksMessage) Handle(mc *gnet.MessageContext, daemon interface{}) error {
 	gbm.c = mc
 	return daemon.(Daemoner).RecordMessageEvent(gbm, mc)
 }
 
 // Process should send number to be requested, with request
 func (gbm *GetBlocksMessage) Process(d Daemoner) {
-	// TODO -- we need the sig to be sent with the block, but only the master
-	// can sign blocks.  Thus the sig needs to be stored with the block.
-	if d.DaemonConfig().DisableNetworking {
-		return
-	}
 	// Record this as this peer's highest block
 	d.RecordPeerHeight(gbm.c.Addr, gbm.LastBlock)
 	// Fetch and return signed blocks since LastBlock
@@ -583,11 +504,6 @@ func (gbm *GiveBlocksMessage) Handle(mc *gnet.MessageContext, daemon interface{}
 
 // Process process message
 func (gbm *GiveBlocksMessage) Process(d Daemoner) {
-	if d.DaemonConfig().DisableNetworking {
-		logger.Critical().Info("Visor disabled, ignoring GiveBlocksMessage")
-		return
-	}
-
 	// These DB queries are not performed in a transaction for performance reasons.
 	// It is not necessary that the blocks be executed together in a single transaction.
 

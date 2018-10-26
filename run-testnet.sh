@@ -7,25 +7,37 @@
 
 set -x
 
-TEMP_DIR="/tmp/skytestnet.$1"
-PEERS_FILE="${TEMP_DIR}/localhost-peers.txt"
+if [ -z "$1" ]; then
+  exit "Missing argument"
+fi
 
-echo "Creating temp dirs starting at $1"
-echo "$1,$(expr $1 + 1),$(expr $1 + 2),$(expr $1 + 3),$(expr $1 + 4),$(expr $1 + 5),$(expr $1 + 6)" | tr , '\n' | xargs -I PORT mkdir -p "${TEMP_DIR}/PORT"
-echo ""
-
-echo "Creating local peers file"
-echo "$1
+PORTS=$(echo "$1
 $(expr $1 + 1)
 $(expr $1 + 2)
 $(expr $1 + 3)
 $(expr $1 + 4)
 $(expr $1 + 5)
-$(expr $1 + 6)" | sed 's/^/127.0.0.1:/g' > ${PEERS_FILE}
-cat ${PEERS_FILE}
-echo ""
+$(expr $1 + 6)")
+
+TEMP_DIR="/tmp/skytestnet.$1"
+PEERS_FILE="${TEMP_DIR}/localhost-peers.txt"
+PID_FILE="${TEMP_DIR}/pid.txt"
+
+echo "Creating temp dirs starting at $1"
+echo "${PORTS}" | tr , '\n' | xargs -I PORT mkdir -p "${TEMP_DIR}/PORT" && \
+  echo "..................................... [OK]"
+
+echo "Creating local peers file"
+echo "${PORTS}" | sed 's/^/127.0.0.1:/g' > ${PEERS_FILE} && \
+  cat ${PEERS_FILE} && \
+  echo "........................... [OK]"
 
 echo "Launching Skycoin nodes"
-cut -d : -f 2 ${PEERS_FILE} | xargs -I SKYPORT screen -dm /bin/bash -c "PORT=SKYPORT; ./run-client.sh -localhost-only -custom-peers-file=$TEMP_DIR/localhost-peers.txt -download-peerlist=false -launch-browser=false -data-dir=$TEMP_DIR/\$PORT -web-interface-port=\$(expr \$PORT + 420) -port=\$PORT "
+echo "" > ${PID_FILE} && \
+  echo "${PORTS}" | while read PORT; do \
+    screen -dmS "skytest.$(echo ${PORT})" /bin/bash -c "./run-client.sh -localhost-only -custom-peers-file=$(echo ${TEMP_DIR})/localhost-peers.txt -download-peerlist=false -launch-browser=false -data-dir=$(echo ${TEMP_DIR})/$(echo ${PORT}) -web-interface-port=\$(expr $(echo ${PORT}) + 420) -port=$(echo ${PORT}) | sed 's/^/skytest.$(echo ${PORT}) I /g'" ; \
+  done && \
+  echo "${PORTS}" | sed 's/^/skytest./g' > ${PID_FILE} && \
+  echo "........................... [OK]"
 
 

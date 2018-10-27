@@ -143,8 +143,8 @@ lint: ## Run linters. Use make install-linters first.
 
 # Simulate running a testnet on isolated mainnet nodes
 # see https://github.com/skycoin/skycoin/wiki/Running-multiple-nodes-locally-isolated-for-manual-testing
-run-testnet:
-	./run-testnet.sh $(SIMTESTNET_BASE_PORT) 
+check-testnet:
+	./ci-scripts/run-testnet.sh $(SIMTESTNET_BASE_PORT) 
 	./ci-scripts/run-live-integration-test-testnet.sh $(SIMTESTNET_BASE_PORT)
 
 check: lint clean-coverage test integration-test-stable integration-test-stable-disable-csrf \

@@ -65,6 +65,6 @@ echo "" > ${PID_FILE} && \
 #  docker run --name "skydocker.$(echo ${PORT})" -localhost-only -custom-peers-file=/data/localhost-peers.txt -download-peerlist=false -launch-browser=false ; \
 ## FIXME: Volumes and log to shared file
 #  done && \
-#  echo "${PORTS_PEERS_STABLE}" | sed 's/^/skydocker./g' >> ${PID_FILE} && \
+#  echo "${PORTS_PEERS_LEGACY}" | sed 's/^/skydocker./g' >> ${PID_FILE} && \
 #  echo "........................................ [OK]"
 

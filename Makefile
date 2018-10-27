@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: run run-help test test-core test-libc test-lint build-libc check
+.PHONY: run run-help test test-core test-libc test-lint build-libc check-testnet check
 .PHONY: integration-test-stable integration-test-stable-disable-csrf
 .PHONY: integration-test-live integration-test-live-wallet
 .PHONY: integration-test-disable-wallet-api integration-test-disable-seed-api
@@ -146,6 +146,8 @@ lint: ## Run linters. Use make install-linters first.
 check-testnet:
 	./ci-scripts/run-testnet.sh $(SIMTESTNET_BASE_PORT) 
 	./ci-scripts/run-live-integration-test-testnet.sh $(SIMTESTNET_BASE_PORT)
+	cat /tmp/skytestnet.$(SIMTESTNET_BASE_PORT)/pid.txt | grep 'skytest'   | xargs -I NAME screen -S NAME -X quit
+	cat /tmp/skytestnet.$(SIMTESTNET_BASE_PORT)/pid.txt | grep 'skydocker' | xargs -I NAME bash -c "docker stop NAME && docker rm NAME"
 
 check: lint clean-coverage test integration-test-stable integration-test-stable-disable-csrf \
 	integration-test-disable-wallet-api integration-test-disable-seed-api \

@@ -81,6 +81,7 @@ Make sure to upgrade to v0.25.0 so that your node will continue to connect once 
 - `cli generateAddresses` renamed to `cli walletAddAddresses`
 - `run.sh` is now `run-client.sh` and a new `run-daemon.sh` script is added for running in server daemon mode.
 - Send new `DISC` disconnect packet to peer before disconnecting
+- `/api/v1/balance`, `/api/v1/transactions`, `/api/v1/outputs` and `/api/v1/blocks` accept the `POST` method so that large request bodies can be sent to the server, which would not fit in a `GET` query string
 - `/api/v1/network/connections` now returns both outgoing and incoming connections by default. Previously it returned only outgoing connections. A `type` parameter is added to filter by outgoing or incoming connections.
 - `/api/v1/explorer/address` is deprecated in favor of `/api/v1/transactions?verbose=1`
 - `/api/v1/health` `"open_connections"` value now includes incoming connections. Added `"outgoing_connections"` and `"incoming_connections"` fields to separate the two.

@@ -235,7 +235,7 @@ type IntroductionMessage struct {
 	// Port is the port that this client is listening on
 	Port uint16
 	// Protocol version
-	Version int32
+	Version       int32
 	userAgentData useragent.Data `enc:"-"`
 
 	// Extra is extra bytes added to the struct to accommodate multiple versions of this packet.
@@ -341,6 +341,7 @@ func (intro *IntroductionMessage) Process(d Daemoner) {
 
 func (intro *IntroductionMessage) verify(d Daemoner) (string, uint16, error) {
 	var userAgentData useragent.Data
+	mc := intro.c
 	addr := intro.c.Addr
 
 	ip, port, err := iputil.SplitAddr(addr)
@@ -377,14 +378,14 @@ func (intro *IntroductionMessage) verify(d Daemoner) (string, uint16, error) {
 			logger.WithField("addr", addr).Infof("Blockchain pubkey does not match, local: %s, remote: %s", d.BlockchainPubkey().Hex(), bcPubKey.Hex())
 			return "", 0, ErrDisconnectBlockchainPubkeyNotMatched
 		}
-			userAgentSerialized := intro.Extra[len(bcPubKey):]
+		userAgentSerialized := intro.Extra[len(bcPubKey):]
 		userAgent, _, err := encoder.DeserializeString(userAgentSerialized, useragent.MaxLen)
 		if err != nil {
 			logger.WithError(err).Info("Extra data user agent string could not be deserialized")
 			if err := d.Disconnect(mc.Addr, ErrDisconnectInvalidExtraData); err != nil {
 				logger.WithError(err).WithField("addr", mc.Addr).Warning("Disconnect")
 			}
-			return ErrDisconnectInvalidExtraData
+			return "", 0, ErrDisconnectInvalidExtraData
 		}
 
 		userAgentData, err = useragent.Parse(useragent.Sanitize(userAgent))
@@ -393,7 +394,7 @@ func (intro *IntroductionMessage) verify(d Daemoner) (string, uint16, error) {
 			if err := d.Disconnect(mc.Addr, ErrDisconnectInvalidUserAgent); err != nil {
 				logger.WithError(err).WithField("addr", mc.Addr).Warning("Disconnect")
 			}
-			return ErrDisconnectInvalidUserAgent
+			return "", 0, ErrDisconnectInvalidUserAgent
 		}
 
 	}

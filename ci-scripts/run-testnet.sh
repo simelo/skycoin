@@ -30,12 +30,14 @@ PORTS_PEERS_PREV=$(echo "$PORTS" | tail -n 2)
 TEMP_DIR="/tmp/skytestnet.$1"
 PEERS_FILE="${TEMP_DIR}/localhost-peers.txt"
 PID_FILE="${TEMP_DIR}/pid.txt"
+LOG_FILE="${TEMP_DIR}/test.log"
 
 VERSION_STABLE=0.24.1
 VERSION_LEGACY=0.23.0
 
 echo "Creating temp dirs at ${TEMP_DIR}"
 echo "${PORTS}" | xargs -I PORT mkdir -p "${TEMP_DIR}/PORT" && \
+  echo "" > ${LOG_FILE} &&
   echo "........................................ [OK]"
 
 echo "Creating local peers file"
@@ -45,8 +47,9 @@ echo "${PORTS_PEERS_SEED}" | head -n 3 | sed 's/^/127.0.0.1:/g' > ${PEERS_FILE} 
 
 echo "Launching Skycoin nodes from working copy"
 echo "" > ${PID_FILE} && \
-  echo "${PORTS_PEERS_LATEST}" | while read PORT; do \
-    screen -dmS "skytest.$(echo ${PORT})" /bin/bash -c "./run-client.sh -localhost-only -custom-peers-file=$(echo ${TEMP_DIR})/localhost-peers.txt -download-peerlist=false -launch-browser=false -data-dir=$(echo ${TEMP_DIR})/$(echo ${PORT}) -web-interface-port=\$(expr $(echo ${PORT}) + 420) -port=$(echo ${PORT}) | sed 's/^/skytest.$(echo ${PORT}) I /g'" ; \
+  echo "${PORTS_PEERS_LATEST}" | \
+  while read PORT; do \
+    screen -dmS "skytest.$(echo ${PORT})" /bin/bash -c "./run-client.sh -localhost-only -custom-peers-file=$(echo ${TEMP_DIR})/localhost-peers.txt -download-peerlist=false -launch-browser=false -data-dir=$(echo ${TEMP_DIR})/$(echo ${PORT}) -web-interface-port=\$(expr $(echo ${PORT}) + 420) -port=$(echo ${PORT}) | sed 's/^/skytest.$(echo ${PORT}) I /g' > $(echo ${LOG_FILE})" ; \
   done && \
   echo "${PORTS_PEERS_LATEST}" | sed 's/^/skytest./g' > ${PID_FILE} && \
   echo "........................................ [OK]"

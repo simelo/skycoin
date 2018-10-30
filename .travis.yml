@@ -50,7 +50,7 @@ install:
   - make install-linters
   # Install pinned golangci-lint, overriding the latest version install by make install-linters
   - VERSION=1.10.2 ./ci-scripts/install-golangci-lint.sh
-  - HOMEBREW_CORE_VERSION=d31bba7772fb01f9ba442d9ee98b33a6e7a055 ./ci-scripts/install-travis-gcc.sh
+  - HOMEBREW_CORE_VERSION=42d31bba7772fb01f9ba442d9ee98b33a6e7a055 ./ci-scripts/install-travis-gcc.sh
   - make install-deps-libc
   - nvm install 8.11.0
   - nvm use 8.11.0

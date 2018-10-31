@@ -6,6 +6,7 @@ if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
 fi
 
 if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+  brew update
   echo 'Available versions (gcc)' && brew list --versions gcc
   brew list gcc@6 &>/dev/null || (echo "Check out version $HOMEBREW_CORE_VERSION" && cd "$(brew --repository)/Library/Taps/homebrew/homebrew-core" && git checkout $HOMEBREW_CORE_VERSION && echo "Install gcc@6" &&  brew install gcc@6 )
 fi

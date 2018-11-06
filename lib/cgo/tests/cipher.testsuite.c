@@ -430,22 +430,26 @@ void ValidateSeedData(SeedTestData* seedData, InputTestData* inputData) {
     cr_assert(eq(type(cipher__Address), addr1, addr2),
         "%d-th SKY_cipher_AddressFromPubKey and SKY_cipher_AddressFromSecKey must generate same addresses", i);
 
-    // TODO : Translate once secp256k1 be part of libskycoin
+    //-----------------------------------------------
+    // secp256k1 not exported in the libc API
+    //-----------------------------------------------
     /*
-    validSec := secp256k1.VerifySeckey(s[:])
-    if validSec != 1 {
-      return errors.New("secp256k1.VerifySeckey failed")
-    }
+    GoInt validSec;
+    char bufferSecKey[101];
+    strnhex((unsigned char *)s, bufferSecKey, sizeof(cipher__SecKey));
+    GoSlice slseckey = { bufferSecKey,sizeof(cipher__SecKey),65  };
+    SKY_secp256k1_VerifySeckey(slseckey,&validSec);
+    cr_assert(validSec ==1 ,"SKY_secp256k1_VerifySeckey failed");
 
-    validPub := secp256k1.VerifyPubkey(p[:])
-    if validPub != 1 {
-      return errors.New("secp256k1.VerifyPubkey failed")
-    }
-    */
+    GoInt validPub;
+    GoSlice slpubkey = { &p,sizeof(cipher__PubKey), sizeof(cipher__PubKey) };
+    SKY_secp256k1_VerifyPubkey(slpubkey,&validPub);
+    cr_assert(validPub ==1 ,"SKY_secp256k1_VerifyPubkey failed");
 
     // FIXME: without cond : 'not give a valid preprocessing token'
     bool cond = (!(inputData == NULL && expected->Signatures.len != 0));
     cr_assert(cond, "%d seed data contains signatures but input data was not provided", i);
+    */
 
     if (inputData != NULL) {
       cr_assert(expected->Signatures.len == inputData->Hashes.len,
@@ -460,11 +464,11 @@ void ValidateSeedData(SeedTestData* seedData, InputTestData* inputData) {
         mem_actual.size = mem_expect.size = sizeof(cipher__Sig);
         cr_assert(ne(mem, mem_actual, mem_expect),
             "%d-th provided signature for %d-th data set must not be null", j, i);
-        GoUint32 err = SKY_cipher_VerifySignature(&p, sig, h);
+        GoUint32 err = SKY_cipher_VerifyPubKeySignedHash(&p, sig, h);
         cr_assert(err == SKY_OK,
-            "SKY_cipher_VerifySignature failed: error=%d dataset=%d hashidx=%d", err, i, j);
-        err = SKY_cipher_ChkSig(&addr1, h, sig);
-        cr_assert(err == SKY_OK, "SKY_cipher_ChkSig failed: error=%d dataset=%d hashidx=%d", err, i, j);
+            "SKY_cipher_VerifyPubKeySignedHash failed: error=%d dataset=%d hashidx=%d", err, i, j);
+        err = SKY_cipher_VerifyAddressSignedHash(&addr1, sig, h);
+        cr_assert(err == SKY_OK, "SKY_cipher_VerifyAddressSignedHash failed: error=%d dataset=%d hashidx=%d", err, i, j);
         err = SKY_cipher_VerifySignedHash(sig, h);
         cr_assert(err == SKY_OK,
             "SKY_cipher_VerifySignedHash failed: error=%d dataset=%d hashidx=%d", err, i, j);

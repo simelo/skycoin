@@ -129,7 +129,7 @@ USAGE:
    skycoin-cli [global options] command [command options] [arguments...]
 
 VERSION:
-   0.24.1
+   0.25.0-rc1
 
 COMMANDS:
      addPrivateKey         Add a private key to specific wallet
@@ -1630,7 +1630,11 @@ $ skycoin-cli status
             "commit": "620405485d3276c16c0379bc3b88b588e34c45e1",
             "branch": "develop"
         },
+	    "coin": "skycoin",
+	    "user_agent": "skycoin:0.25.0-rc1",
         "open_connections": 8,
+        "outgoing_connections": 5,
+        "incoming_connections": 3,
         "uptime": "4h1m23.697072461s",
         "csrf_enabled": true,
         "csp_enabled": true,

@@ -23,6 +23,7 @@ BUILDLIB_DIR = $(BUILD_DIR)/libskycoin
 LIB_DIR = lib
 LIB_FILES = $(shell find ./lib/cgo -type f -name "*.go")
 SRC_FILES = $(shell find ./src -type f -name "*.go")
+HEADER_FILES = $(shell find ./include -type f -name "*.h")
 BIN_DIR = bin
 DOC_DIR = docs
 INCLUDE_DIR = include
@@ -61,8 +62,11 @@ else
   LDFLAGS=$(LIBC_FLAGS)
 endif
 
-run:  ## Run the skycoin node. To add arguments, do 'make ARGS="--foo" run'.
-	./run.sh ${ARGS}
+run-client:  ## Run skycoin with desktop client configuration. To add arguments, do 'make ARGS="--foo" run'.
+	./run-client.sh ${ARGS}
+
+run-daemon:  ## Run skycoin with server daemon configuration. To add arguments, do 'make ARGS="--foo" run'.
+	./run-daemon.sh ${ARGS}
 
 run-help: ## Show skycoin node help
 	@go run cmd/$(COIN)/$(COIN).go --help
@@ -90,21 +94,23 @@ configure-build:
 	mkdir -p $(BUILD_DIR)/usr/tmp $(BUILD_DIR)/usr/lib $(BUILD_DIR)/usr/include
 	mkdir -p $(BUILDLIB_DIR) $(BIN_DIR) $(INCLUDE_DIR)
 
-$(BUILDLIB_DIR)/libskycoin.so: $(LIB_FILES) $(SRC_FILES)
+$(BUILDLIB_DIR)/libskycoin.so: $(LIB_FILES) $(SRC_FILES) $(HEADER_FILES)
 	rm -Rf $(BUILDLIB_DIR)/libskycoin.so
 	go build -buildmode=c-shared  -o $(BUILDLIB_DIR)/libskycoin.so $(LIB_FILES)
 	mv $(BUILDLIB_DIR)/libskycoin.h $(INCLUDE_DIR)/
 
-$(BUILDLIB_DIR)/libskycoin.a: $(LIB_FILES) $(SRC_FILES)
+$(BUILDLIB_DIR)/libskycoin.a: $(LIB_FILES) $(SRC_FILES) $(HEADER_FILES)
 	rm -Rf $(BUILDLIB_DIR)/libskycoin.a
 	go build -buildmode=c-archive -o $(BUILDLIB_DIR)/libskycoin.a  $(LIB_FILES)
 	mv $(BUILDLIB_DIR)/libskycoin.h $(INCLUDE_DIR)/
 
+## Build libskycoin C static library
 build-libc-static: $(BUILDLIB_DIR)/libskycoin.a
 
+## Build libskycoin C shared library
 build-libc-shared: $(BUILDLIB_DIR)/libskycoin.so
 
-## Build libskycoin C client library
+## Build libskycoin C client libraries
 build-libc: configure-build build-libc-static build-libc-shared
 
 ## Build libskycoin C client library and executable C test suites
@@ -209,20 +215,33 @@ build-ui:  ## Builds the UI
 build-ui-travis:  ## Builds the UI for travis
 	cd $(GUI_STATIC_DIR) && npm run build-travis
 
-release: ## Build electron and standalone apps. Use osarch=${osarch} to specify the platform. Example: 'make release osarch=darwin/amd64', multiple platform can be supported in this way: 'make release osarch="darwin/amd64 windows/amd64"'. Supported architectures are: darwin/amd64 windows/amd64 windows/386 linux/amd64 linux/arm, the builds are located in electron/release folder.
+release: ## Build electron, standalone and daemon apps. Use osarch=${osarch} to specify the platform. Example: 'make release osarch=darwin/amd64', multiple platform can be supported in this way: 'make release osarch="darwin/amd64 windows/amd64"'. Supported architectures are: darwin/amd64 windows/amd64 windows/386 linux/amd64 linux/arm, the builds are located in electron/release folder.
 	cd $(ELECTRON_DIR) && ./build.sh ${osarch}
 	@echo release files are in the folder of electron/release
 
-release-bin: ## Build standalone apps. Use osarch=${osarch} to specify the platform. Example: 'make release-bin osarch=darwin/amd64' Supported architectures are the same as 'release' command.
+release-standalone: ## Build standalone apps. Use osarch=${osarch} to specify the platform. Example: 'make release-standalone osarch=darwin/amd64' Supported architectures are the same as 'release' command.
 	cd $(ELECTRON_DIR) && ./build-standalone-release.sh ${osarch}
 	@echo release files are in the folder of electron/release
 
-release-gui: ## Build electron apps. Use osarch=${osarch} to specify the platform. Example: 'make release-gui osarch=darwin/amd64' Supported architectures are the same as 'release' command.
+release-electron: ## Build electron apps. Use osarch=${osarch} to specify the platform. Example: 'make release-electron osarch=darwin/amd64' Supported architectures are the same as 'release' command.
 	cd $(ELECTRON_DIR) && ./build-electron-release.sh ${osarch}
 	@echo release files are in the folder of electron/release
 
-clean-release: ## Clean dist files and delete all builds in electron/release
-	rm $(ELECTRON_DIR)/release/*
+release-daemon: ## Build daemon apps. Use osarch=${osarch} to specify the platform. Example: 'make release-daemon osarch=darwin/amd64' Supported architectures are the same as 'release' command.
+	cd $(ELECTRON_DIR) && ./build-daemon-release.sh ${osarch}
+	@echo release files are in the folder of electron/release
+
+release-cli: ## Build CLI apps. Use osarch=${osarch} to specify the platform. Example: 'make release-cli osarch=darwin/amd64' Supported architectures are the same as 'release' command.
+	cd $(ELECTRON_DIR) && ./build-cli-release.sh ${osarch}
+	@echo release files are in the folder of electron/release
+
+clean-release: ## Remove all electron build artifacts
+	rm -rf $(ELECTRON_DIR)/release
+	rm -rf $(ELECTRON_DIR)/.gox_output
+	rm -rf $(ELECTRON_DIR)/.daemon_output
+	rm -rf $(ELECTRON_DIR)/.cli_output
+	rm -rf $(ELECTRON_DIR)/.standalone_output
+	rm -rf $(ELECTRON_DIR)/.electron_output
 
 clean-coverage: ## Remove coverage output files
 	rm -rf ./coverage/

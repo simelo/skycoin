@@ -30,7 +30,7 @@ cache:
 install:
   - echo %PATH%
   - echo %GOPATH%
-  - set PATH=%GOPATH%\bin;%GIT_PATH%;%MINGW_W64%;c:\go\bin;%PATH%
+  - set PATH=%GOPATH%\bin;%GIT_PATH%;%MINGW_W64%\bin;c:\go\bin;%PATH%
   - cmd: cp %MINGW_W64%\bin\mingw32-make.exe %MINGW_W64%\bin\make.exe
   - go version
   - go env

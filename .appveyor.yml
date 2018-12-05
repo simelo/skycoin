@@ -1,35 +1,83 @@
+version: '0.24.1.{build}'
 image: Visual Studio 2017
 platform:
   - x64
 
 clone_folder: c:\gopath\src\github.com\skycoin\skycoin
 
-branches:
-  only:
-    - master
+# branches:
+#   only:
+#     - master
 
 environment:
-  GOPATH: c:\gopath
-  GOX_OUTPUT: .gox_output
+  global:
+    GOPATH: c:\gopath
+    GOX_OUTPUT: .gox_output
+    GIT_PATH: c:\Program Files\Git\bin
+    MINGW_W64: c:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64
+    VERSION_UPGRADE_TEST_WAIT_TIMEOUT: 60s
+
+stack: go 1.11
 
 cache:
   - 'electron\node_modules'
   - '%USERPROFILE%\.electron'
 
+# Enable Windows RDP Client Access to Build Worker
+# init:
+#   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
 install:
   - echo %PATH%
   - echo %GOPATH%
-  - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
+  - set PATH=%GOPATH%\bin;%GIT_PATH%;%MINGW_W64%;c:\go\bin;%PATH%
+  - cmd: cp %MINGW_W64%\bin\mingw32-make.exe %MINGW_W64%\bin\make.exe
   - go version
   - go env
   - go get github.com/gz-c/gox
+  - go get -t ./...
   - ps: Install-Product node 8 x64
+  - make install-linters
+  - make install-deps-libc
+  - make install-deps-ui
 
 build_script:
+  # Buld electron for windows
   - cd electron
   - cmd: bash ./build.sh 'windows/amd64 windows/386'
   - ps: ls release\
   - ps: cd ..
+  # Make test
+  - make lint
+  - make test-386
+  - make test-amd64
+  # Stable integration tests
+  - make integration-test-stable
+  # Stable integration tests without CSRF
+  - make integration-test-stable-disable-csrf
+  # Disable wallet api test
+  - make integration-test-disable-wallet-api
+  # Disable seed api test
+  - make integration-test-disable-seed-api
+  # Enable seed api test
+  - make integration-test-enable-seed-api
+  # Disable GUI test
+  - make integration-test-disable-gui
+  # Enable auth test
+  - make integration-test-auth
+  # Stable integration tests without unconfirmed transactions
+  - make integration-test-db-no-unconfirmed
+  # libskycoin tests
+  - CC=gcc-6 make test-libc
+  # TODO: test pyskycoin
+  # - CC=gcc-6 make test-libpy
+  # TODO: test ui
+  # - make test-ui
+  # - make test-libpy
+  - make lint-ui
+  - make build-ui-travis
+  - make test-ui
+  - make test-ui-e2e
 
 after_build:
   - ps: 7z a skycoin.zip C:\gopath\src\github.com\skycoin\skycoin\electron\release\*
@@ -54,9 +102,89 @@ deploy:
   on:
     branch: master
 
+    # on successful build
+on_success:
+  - ECHO "BUILD VICTORY"
+
+# on build failure
+on_failure:
+  - ECHO "TRY AND TRY AGAIN"
 
 notifications:
   - provider: Email
     on_build_success: false
     on_build_failure: false
     on_build_status_changed: false
+
+    # after build failure or success
+on_finish:
+  #  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  # https://www.appveyor.com/docs/environment-variables/
+  # Environment variables that are set by AppVeyor for every build:
+  # APPVEYOR - True if build runs in AppVeyor environment;
+  - ECHO %APPVEYOR%
+  # CI - True if build runs in AppVeyor environment;
+  - ECHO %CI%
+  # APPVEYOR_API_URL - AppVeyor Build Agent API URL;
+  - ECHO %APPVEYOR_API_URL%
+  # APPVEYOR_ACCOUNT_NAME - account name;
+  - ECHO %APPVEYOR_ACCOUNT_NAME%
+  # APPVEYOR_PROJECT_ID - AppVeyor unique project ID;
+  - ECHO %APPVEYOR_PROJECT_ID%
+  # APPVEYOR_PROJECT_NAME - project name;
+  - ECHO %APPVEYOR_PROJECT_NAME%
+  # APPVEYOR_PROJECT_SLUG - project slug (as seen in project details URL);
+  - ECHO %APPVEYOR_PROJECT_SLUG%
+  # APPVEYOR_BUILD_FOLDER - path to clone directory;
+  - ECHO %APPVEYOR_BUILD_FOLDER%
+  # APPVEYOR_BUILD_ID - AppVeyor unique build ID;
+  - ECHO %APPVEYOR_BUILD_ID%
+  # APPVEYOR_BUILD_NUMBER - build number;
+  - ECHO %APPVEYOR_BUILD_NUMBER%
+  # APPVEYOR_BUILD_VERSION - build version;
+  - ECHO %APPVEYOR_BUILD_VERSION%
+  # APPVEYOR_PULL_REQUEST_NUMBER - GitHub Pull Request number;
+  - ECHO %APPVEYOR_PULL_REQUEST_NUMBER%
+  # APPVEYOR_PULL_REQUEST_TITLE - GitHub Pull Request title
+  - ECHO %APPVEYOR_PULL_REQUEST_TITLE%
+  # APPVEYOR_JOB_ID - AppVeyor unique job ID;
+  - ECHO %APPVEYOR_JOB_ID%
+  # APPVEYOR_JOB_NAME - job name;
+  - ECHO %APPVEYOR_JOB_NAME%
+  # APPVEYOR_REPO_PROVIDER - github, bitbucket, kiln, vso or gitlab;
+  - ECHO %APPVEYOR_REPO_PROVIDER%
+  # APPVEYOR_REPO_SCM - git or mercurial;
+  - ECHO %APPVEYOR_REPO_SCM%
+  # APPVEYOR_REPO_NAME - repository name in format owner-name/repo-name;
+  - ECHO %APPVEYOR_REPO_NAME%
+  # APPVEYOR_REPO_BRANCH - build branch. For Pull Request commits it is base branch PR is merging into;
+  - ECHO %APPVEYOR_REPO_BRANCH%
+  # APPVEYOR_REPO_TAG - true if build has started by pushed tag; otherwise false;
+  - ECHO %APPVEYOR_REPO_TAG%
+  # APPVEYOR_REPO_TAG_NAME - contains tag name for builds started by tag; otherwise this variable is undefined;
+  - ECHO %APPVEYOR_REPO_TAG_NAME%
+  # APPVEYOR_REPO_COMMIT - commit ID (SHA);
+  - ECHO %APPVEYOR_REPO_COMMIT%
+  # APPVEYOR_REPO_COMMIT_AUTHOR - commit author’s name;
+  - ECHO %APPVEYOR_REPO_COMMIT_AUTHOR%
+  # APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL - commit author’s email address;
+  - ECHO %APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL%
+  # APPVEYOR_REPO_COMMIT_TIMESTAMP - commit date/time;
+  - ECHO %APPVEYOR_REPO_COMMIT_TIMESTAMP%
+  #
+  # commit message disabled; can cause false failure
+  #
+  # APPVEYOR_REPO_COMMIT_MESSAGE - commit message;
+  #  - ECHO %APPVEYOR_REPO_COMMIT_MESSAGE%
+  # APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED - the rest of commit message after line break (if exists);
+  #  - ECHO %APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED%
+  # APPVEYOR_SCHEDULED_BUILD - True if the build runs by scheduler;
+  - ECHO %APPVEYOR_SCHEDULED_BUILD%
+  # APPVEYOR_FORCED_BUILD (True or undefined) - builds started by “New build” button or from the same API;
+  - ECHO %APPVEYOR_FORCED_BUILD%
+  # APPVEYOR_RE_BUILD (True or undefined) - build started by “Re-build commit/PR” button of from the same API;
+  - ECHO %APPVEYOR_RE_BUILD%
+  # PLATFORM - platform name set on Build tab of project settings (or through platform parameter in appveyor.yml);
+  - ECHO %PLATFORM%
+  # CONFIGURATION - configuration name set on Build tab of project settings (or through configuration parameter in appveyor.yml);
+  - ECHO %CONFIGURATION%

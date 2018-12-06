@@ -63,6 +63,7 @@ else
   LDPATHVAR=LD_LIBRARY_PATH
   LDFLAGS=$(LIBC_FLAGS)
   CRITERIORN_BUILD_FLAGS = -j2
+  OSNAME = win
 endif
 
 run-client:  ## Run skycoin with desktop client configuration. To add arguments, do 'make ARGS="--foo" run'.
@@ -191,7 +192,9 @@ install-linters: ## Install linters
 install-deps-libc: configure-build ## Install locally dependencies for testing libskycoin
 	git clone --recursive https://github.com/skycoin/Criterion $(BUILD_DIR)/usr/tmp/Criterion
 	mkdir $(BUILD_DIR)/usr/tmp/Criterion/build
-	cd    $(BUILD_DIR)/usr/tmp/Criterion/build && cmake .. && cmake --build . -- $(CRITERIORN_BUILD_FLAGS)
+	cd    $(BUILD_DIR)/usr/tmp/Criterion/build
+	cmake -Wno-dev -DCTESTS=ON -DI18N=OFF -DCMAKE_INSTALL_PREFIX="criterion-$(OSNAME)" -DCMAKE_BUILD_TYPE="RelWithDebInfo" ${CMAKE_OPTS}
+	cmake --build . -- $(CRITERIORN_BUILD_FLAGS)
 	mv    $(BUILD_DIR)/usr/tmp/Criterion/build/libcriterion.* $(BUILD_DIR)/usr/lib/
 	cp -R $(BUILD_DIR)/usr/tmp/Criterion/include/* $(BUILD_DIR)/usr/include/
 

@@ -30,6 +30,7 @@ DOC_DIR = docs
 INCLUDE_DIR = include
 LIBSRC_DIR = lib/cgo
 LIBDOC_DIR = $(DOC_DIR)/libc
+CRITERIORN_BUILD_FLAGS = -j4
 
 # Compilation flags for libskycoin
 CC_VERSION = $(shell $(CC) -dumpversion)
@@ -61,6 +62,7 @@ else
   LDPATH=$(shell printenv LD_LIBRARY_PATH)
   LDPATHVAR=LD_LIBRARY_PATH
   LDFLAGS=$(LIBC_FLAGS)
+  CRITERIORN_BUILD_FLAGS = -j2
 endif
 
 run-client:  ## Run skycoin with desktop client configuration. To add arguments, do 'make ARGS="--foo" run'.
@@ -189,7 +191,7 @@ install-linters: ## Install linters
 install-deps-libc: configure-build ## Install locally dependencies for testing libskycoin
 	git clone --recursive https://github.com/skycoin/Criterion $(BUILD_DIR)/usr/tmp/Criterion
 	mkdir $(BUILD_DIR)/usr/tmp/Criterion/build
-	cd    $(BUILD_DIR)/usr/tmp/Criterion/build && cmake .. && cmake --build . -- %BUILD_FLAGS%
+	cd    $(BUILD_DIR)/usr/tmp/Criterion/build && cmake .. && cmake --build . -- $(CRITERIORN_BUILD_FLAGS)
 	mv    $(BUILD_DIR)/usr/tmp/Criterion/build/libcriterion.* $(BUILD_DIR)/usr/lib/
 	cp -R $(BUILD_DIR)/usr/tmp/Criterion/include/* $(BUILD_DIR)/usr/include/
 

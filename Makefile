@@ -189,7 +189,7 @@ install-linters: ## Install linters
 install-deps-libc: configure-build ## Install locally dependencies for testing libskycoin
 	git clone --recursive https://github.com/skycoin/Criterion $(BUILD_DIR)/usr/tmp/Criterion
 	mkdir $(BUILD_DIR)/usr/tmp/Criterion/build
-	cd    $(BUILD_DIR)/usr/tmp/Criterion/build && cmake .. && cmake --build .
+	cd    $(BUILD_DIR)/usr/tmp/Criterion/build && cmake .. && cmake --build . -- %BUILD_FLAGS%
 	mv    $(BUILD_DIR)/usr/tmp/Criterion/build/libcriterion.* $(BUILD_DIR)/usr/lib/
 	cp -R $(BUILD_DIR)/usr/tmp/Criterion/include/* $(BUILD_DIR)/usr/include/
 

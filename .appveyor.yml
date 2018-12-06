@@ -1,6 +1,7 @@
 version: '0.24.1.{build}'
-image: Visual Studio 2017
+image: Visual Studio 2015
 platform:
+  - x86_64
   - x64
 
 clone_folder: c:\gopath\src\github.com\skycoin\skycoin
@@ -16,6 +17,11 @@ environment:
     GIT_PATH: c:\Program Files\Git\bin
     MINGW_W64: c:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64
     VERSION_UPGRADE_TEST_WAIT_TIMEOUT: 60s
+    COMPILER: mingw
+    GENERATOR: "MSYS Makefiles"
+    BUILD_FLAGS: -j2
+    CPPFLAGS: -D__USE_MINGW_ANSI_STDIO=1
+    CRAM_SHELL: "c:\\msys64\\usr\\bin\\sh.exe"
 
 stack: go 1.11
 
@@ -23,15 +29,31 @@ cache:
   - 'electron\node_modules'
   - '%USERPROFILE%\.electron'
 
+# Do some important things before all steps
+init:
 # Enable Windows RDP Client Access to Build Worker
-# init:
 #   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - set MSYSTEM=MINGW64
+
+  # Disable windows process crash popup
+  # See: https://msdn.microsoft.com/en-us/library/bb513638%28VS.85%29.aspx
+  - reg add "HKLM\SYSTEM\CurrentControlSet\Control\Windows" /f /v ErrorMode /t REG_DWORD /d 2
+  - reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting" /f /v DontShowUI /t REG_DWORD /d 1
+  - reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting" /f /v Disable /t REG_DWORD /d 1
+
+  - set PATH=c:\go\bin;c:\Python35;c:\Python35\Scripts;c:\msys64\mingw64\bin;c:\msys64\mingw32\bin;c:\msys64\usr\bin;%PATH%
+  - set PATH=%PATH%;%APPVEYOR_BUILD_FOLDER%\build;%APPVEYOR_BUILD_FOLDER%\build\Debug;%APPVEYOR_BUILD_FOLDER%\build\external\bin;%APPVEYOR_BUILD_FOLDER%\build\external\lib"
+  - set MSYSTEM=MINGW64
+  - pip install cram==0.7
+
+  # Remove Xamarin msbuild warnings
+  - del "c:\Program Files (x86)\MSBuild\14.0\Microsoft.Common.targets\ImportAfter\Xamarin.Common.targets"
 
 install:
-  - echo %PATH%
-  - echo %GOPATH%
-  - set PATH=%GOPATH%\bin;%GIT_PATH%;%MINGW_W64%\bin;c:\go\bin;%PATH%
-  - cmd: cp %MINGW_W64%\bin\mingw32-make.exe %MINGW_W64%\bin\make.exe
+  # - echo %PATH%
+  # - echo %GOPATH%
+  # - set PATH=%GOPATH%\bin;%GIT_PATH%;%MINGW_W64%\bin;c:\go\bin;%PATH%
+  # - cmd: cp %MINGW_W64%\bin\mingw32-make.exe %MINGW_W64%\bin\make.exe
   - go version
   - go env
   - go get github.com/gz-c/gox
@@ -80,7 +102,7 @@ build_script:
   - make test-ui-e2e
 
 after_build:
-  - ps: 7z a skycoin.zip C:\gopath\src\github.com\skycoin\skycoin\electron\release\*
+  - ps: 7z a skycoin.zip c:\gopath\src\github.com\skycoin\skycoin\electron\release\*
   - ps: ls *.zip
 
 test: off

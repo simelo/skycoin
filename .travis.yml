@@ -25,6 +25,7 @@ env:
     - BUILDLIB_DIR: $BUILD_DIR/libskycoin
     - LIB_DIR: lib
     - BUILD_UI_TRAVIS_DIR: HOME/.skycoin-ui-travis
+    - GOLANGCI_LINT_VERSION: 1.10.2
 
 cache:
   directories:
@@ -48,7 +49,7 @@ install:
   - go get -t ./...
   - make install-linters
   # Install pinned golangci-lint, overriding the latest version install by make install-linters
-  - VERSION=1.10.2 ./ci-scripts/install-golangci-lint.sh
+  - ./ci-scripts/install-golangci-lint.sh
   - nvm install 8.11.0
   - nvm use 8.11.0
   - make install-deps-ui

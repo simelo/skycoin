@@ -1,9 +1,7 @@
 version: '0.24.1.{build}'
-image: Visual Studio 2015
+image: Visual Studio 2017
 platform:
-  - x86
   - x64
-  - Any CPU
 
 clone_folder: C:\gopath\src\github.com\skycoin\skycoin
 
@@ -23,6 +21,7 @@ environment:
     BUILD_FLAGS: -j2
     CPPFLAGS: -D__USE_MINGW_ANSI_STDIO=1
     CRAM_SHELL: "C:\\msys64\\usr\\bin\\sh.exe"
+    GOLANGCI_LINT_VERSION: 1.10.2
 
 stack: go 1.11
 
@@ -62,7 +61,10 @@ install:
   - go get -t ./...
   - ps: Install-Product node 8 x64
   - make check-newcoin
-  - make install-linters
+  # Install linters on Windows
+  - go get -u github.com/FiloSottile/vendorcheck
+  - cmd: bash ./ci-scripts/install-golangci-lint.sh
+  # - make install-linters
   - make install-deps-ui
 
 build_script:

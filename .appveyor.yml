@@ -61,7 +61,6 @@ install:
   - go get -t ./...
   - ps: Install-Product node 8 x64
   - make install-linters
-  - make install-deps-libc
   - make install-deps-ui
 
 build_script:

@@ -61,12 +61,12 @@ install:
   - go get github.com/gz-c/gox
   - go get -t ./...
   - ps: Install-Product node 8 x64
+  - make check-newcoin
   - make install-linters
   - make install-deps-ui
 
 build_script:
   # Make test
-  - make check-newcoin
   - make lint
   - make test-386
   - make test-amd64

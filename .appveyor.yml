@@ -65,11 +65,6 @@ install:
   - make install-deps-ui
 
 build_script:
-  # Buld electron for windows
-  - cd electron
-  - cmd: bash ./build.sh 'windows/amd64 windows/386'
-  - ps: ls release\
-  - ps: cd ..
   # Make test
   - make check-newcoin
   - make lint
@@ -95,6 +90,11 @@ build_script:
   - make build-ui-travis
   - make test-ui
   - make test-ui-e2e
+  # Build electron for windows
+  - cd electron
+  - cmd: bash ./build.sh 'windows/amd64 windows/386'
+  - ps: ls release\
+  - ps: cd ..
 
 after_build:
   - ps: 7z a skycoin.zip c:\gopath\src\github.com\skycoin\skycoin\electron\release\*

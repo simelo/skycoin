@@ -1,10 +1,11 @@
 version: '0.24.1.{build}'
 image: Visual Studio 2015
 platform:
-  - x86_64
+  - x86
   - x64
+  - Any CPU
 
-clone_folder: c:\gopath\src\github.com\skycoin\skycoin
+clone_folder: C:\gopath\src\github.com\skycoin\skycoin
 
 # branches:
 #   only:
@@ -12,16 +13,16 @@ clone_folder: c:\gopath\src\github.com\skycoin\skycoin
 
 environment:
   global:
-    GOPATH: c:\gopath
+    GOPATH: C:\gopath
     GOX_OUTPUT: .gox_output
-    GIT_PATH: c:\Program Files\Git\bin
-    MINGW_W64: c:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64
+    GIT_PATH: C:\Program Files\Git\bin
+    MINGW_W64: C:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64
     VERSION_UPGRADE_TEST_WAIT_TIMEOUT: 60s
     COMPILER: mingw
     GENERATOR: "MSYS Makefiles"
     BUILD_FLAGS: -j2
     CPPFLAGS: -D__USE_MINGW_ANSI_STDIO=1
-    CRAM_SHELL: "c:\\msys64\\usr\\bin\\sh.exe"
+    CRAM_SHELL: "C:\\msys64\\usr\\bin\\sh.exe"
 
 stack: go 1.11
 
@@ -70,6 +71,7 @@ build_script:
   - ps: ls release\
   - ps: cd ..
   # Make test
+  - make check-newcoin
   - make lint
   - make test-386
   - make test-amd64
@@ -89,13 +91,6 @@ build_script:
   - make integration-test-auth
   # Stable integration tests without unconfirmed transactions
   - make integration-test-db-no-unconfirmed
-  # libskycoin tests
-  - CC=gcc-6 make test-libc
-  # TODO: test pyskycoin
-  # - CC=gcc-6 make test-libpy
-  # TODO: test ui
-  # - make test-ui
-  # - make test-libpy
   - make lint-ui
   - make build-ui-travis
   - make test-ui

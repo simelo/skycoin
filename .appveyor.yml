@@ -63,7 +63,10 @@ install:
   - make check-newcoin
   # Install linters on Windows
   - go get -u github.com/FiloSottile/vendorcheck
-  - cmd: bash ./ci-scripts/install-golangci-lint.sh
+  - go get gopkg.in/golangci/golangci-lint.v%GOLANGCI_LINT_VERSION%
+  - go get gopkg.in/golangci/golangci-lint.v1.10.2
+  - golangci-lint --version
+  # - cmd: bash ./ci-scripts/install-golangci-lint.sh
   # - make install-linters
   - make install-deps-ui
 

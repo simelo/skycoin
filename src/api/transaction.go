@@ -24,82 +24,7 @@ import (
 // URI: /api/v1/pendingTxs
 // Args:
 //	verbose: [bool] include verbose transaction input data
-func pendingTxnsHandler(gateway Gatewayer, verbs bool) http.HandlerFunc {
-
-	// swagger:operation GET /api/v1/pendingTxs/verbose pendingTxsVerbose
-	//
-	// Returns pending (unconfirmed) transactions with verbose
-	//
-	// ---
-	// produces:
-	// - application/json
-	// responses:
-	//   200:
-	//     description: Returns a transaction identified by its txid hash.
-	//     schema:
-	//       type: array
-	//       items:
-	//         properties:
-	//           transaction:
-	//             type: object
-	//             description: BlockTransactionVerbose has readable transaction data for transactions inside a block. It differs from Transaction in that it includes metadata for transaction inputs and the calculated coinhour fee spent by the block
-	//             properties:
-	//               length:
-	//                 type: integer
-	//                 format: int32
-	//               type:
-	//                 type: integer
-	//                 format: int32
-	//               hash:
-	//                 type: string
-	//               inner_hash:
-	//                 type: string
-	//               fee:
-	//                 type: integer
-	//                 format: int32
-	//               sigs:
-	//                 type: array
-	//                 items:
-	//                   type: string
-	//               inputs:
-	//                 type: array
-	//                 items:
-	//                   properties:
-	//                     uxid:
-	//                       type: string
-	//                     dst:
-	//                       type: string
-	//                     coins:
-	//                       type: string
-	//                     hours:
-	//                       type: integer
-	//                       format: int64
-	//                     calculated_hours:
-	//                       type: integer
-	//                       format: int64
-	//               outputs:
-	//                 type: array
-	//                 items:
-	//                   properties:
-	//                     uxid:
-	//                       type: string
-	//                     dst:
-	//                       type: string
-	//                     coins:
-	//                       type: string
-	//                     hours:
-	//                       type: integer
-	//                       format: int64
-	//           received:
-	//             type: string
-	//           checked:
-	//             type: string
-	//           announced:
-	//             type: string
-	//           is_valid:
-	//             type: boolean
-	//   default:
-	//     $ref: '#/responses/genericError'
+func pendingTxnsHandler(gateway Gatewayer) http.HandlerFunc {
 
 	// swagger:operation GET /api/v1/pendingTxs pendingTxs
 	//
@@ -176,7 +101,7 @@ func pendingTxnsHandler(gateway Gatewayer, verbs bool) http.HandlerFunc {
 			return
 		}
 
-		if verbose || verbs {
+		if verbose {
 			txns, inputs, err := gateway.GetAllUnconfirmedTransactionsVerbose()
 			if err != nil {
 				wh.Error500(w, err.Error())
@@ -222,160 +147,7 @@ type TransactionEncodedResponse struct {
 //	txid: transaction hash
 //	verbose: [bool] include verbose transaction input data
 //  encoded: [bool] return as a raw encoded transaction
-func transactionHandler(gateway Gatewayer, verbs, encod bool) http.HandlerFunc {
-
-	// swagger:operation GET /api/v1/transaction/verbose transactionVerbose
-	//
-	// Returns a transaction identified by its txid hash with Verbose
-	//
-	// ---
-	// produces:
-	// - application/json
-	// parameters:
-	// - name: txid
-	//   in: query
-	//   description: transaction hash
-	//   required: true
-	//   type: string
-	// - name: encoded
-	//   in: query
-	//   description: return as a raw encoded transaction.
-	//   required: false
-	//   type: boolean
-	// responses:
-	//   200:
-	//     description: Returns a transaction identified by its txid hash.
-	//     schema:
-	//       properties:
-	//           status:
-	//             type: object
-	//             properties:
-	//               confirmed:
-	//                 type: boolean
-	//               unconfirmed:
-	//                 type: boolean
-	//               height:
-	//                 description: If confirmed, how many blocks deep in the chain it is. Will be at least 1 if confirmed
-	//                 type: integer
-	//                 format: int64
-	//               block_seq:
-	//                 description: If confirmed, the sequence of the block in which the transaction was executed
-	//                 type: integer
-	//                 format: int64
-	//           time:
-	//             type: integer
-	//             format: int64
-	//           txn:
-	//             description: TransactionVerbose has readable transaction data. It adds TransactionStatus to a BlockTransactionVerbose
-	//             type: object
-	//             properties:
-	//               status:
-	//                 type: object
-	//                 properties:
-	//                   confirmed:
-	//                      type: boolean
-	//                   unconfirmed:
-	//                     type: boolean
-	//                   height:
-	//                     description: If confirmed, how many blocks deep in the chain it is. Will be at least 1 if confirmed
-	//                     type: integer
-	//                     format: int64
-	//                   block_seq:
-	//                     description: If confirmed, the sequence of the block in which the transaction was executed
-	//                     type: integer
-	//                     format: int64
-	//               timestamp:
-	//                 type: integer
-	//                 format: int64
-	//               length:
-	//                 type: integer
-	//                 format: int32
-	//               type:
-	//                 type: integer
-	//                 format: int32
-	//               hash:
-	//                 type: string
-	//               inner_hash:
-	//                 type: string
-	//               fee:
-	//                 type: integer
-	//                 format: int32
-	//               sigs:
-	//                 type: array
-	//                 items:
-	//                   type: string
-	//               inputs:
-	//                 type: array
-	//                 items:
-	//                   properties:
-	//                     uxid:
-	//                       type: string
-	//                     dst:
-	//                       type: string
-	//                     coins:
-	//                       type: string
-	//                     hours:
-	//                       type: integer
-	//                       format: int64
-	//                     calculated_hours:
-	//                       type: integer
-	//                       format: int64
-	//               outputs:
-	//                 type: array
-	//                 items:
-	//                   properties:
-	//                     uxid:
-	//                       type: string
-	//                     dst:
-	//                       type: string
-	//                     coins:
-	//                       type: string
-	//                     hours:
-	//                       type: integer
-	//                       format: int64
-	//   default:
-	//     $ref: '#/responses/genericError'
-
-	// swagger:operation GET /api/v1/transaction/encoded transactionEncoded
-	//
-	// Returns a transaction identified by its txid hash encoded
-	//
-	// ---
-	// produces:
-	// - application/json
-	// parameters:
-	// - name: txid
-	//   in: query
-	//   description: transaction hash
-	//   required: true
-	//   type: string
-	// responses:
-	//   200:
-	//     description: Returns a transaction identified by its txid hash.
-	//     schema:
-	//       properties:
-	//           status:
-	//             type: object
-	//             properties:
-	//               confirmed:
-	//                 type: boolean
-	//               unconfirmed:
-	//                 type: boolean
-	//               height:
-	//                 description: If confirmed, how many blocks deep in the chain it is. Will be at least 1 if confirmed
-	//                 type: integer
-	//                 format: int64
-	//               block_seq:
-	//                 description: If confirmed, the sequence of the block in which the transaction was executed
-	//                 type: integer
-	//                 format: int64
-	//           time:
-	//             type: integer
-	//             format: int64
-	//           encoded_transaction:
-	//             type: string
-	//   default:
-	//     $ref: '#/responses/genericError'
+func transactionHandler(gateway Gatewayer) http.HandlerFunc {
 
 	// swagger:operation GET /api/v1/transaction transaction
 	//
@@ -483,7 +255,7 @@ func transactionHandler(gateway Gatewayer, verbs, encod bool) http.HandlerFunc {
 			return
 		}
 
-		if verbose && encoded || verbs && encoded || verbose && encod {
+		if verbose && encoded {
 			wh.Error400(w, "verbose and encoded cannot be combined")
 			return
 		}
@@ -494,7 +266,7 @@ func transactionHandler(gateway Gatewayer, verbs, encod bool) http.HandlerFunc {
 			return
 		}
 
-		if verbose || verbs {
+		if verbose {
 			txn, inputs, err := gateway.GetTransactionVerbose(h)
 			if err != nil {
 				wh.Error500(w, err.Error())
@@ -525,7 +297,7 @@ func transactionHandler(gateway Gatewayer, verbs, encod bool) http.HandlerFunc {
 			return
 		}
 
-		if encoded || encod {
+		if encoded {
 			txnStr := hex.EncodeToString(txn.Transaction.Serialize())
 
 			wh.SendJSONOr500(logger, w, TransactionEncodedResponse{
@@ -627,238 +399,7 @@ func NewTransactionsWithStatusVerbose(txns []visor.Transaction, inputs [][]visor
 //     addrs: Comma separated addresses [optional, returns all transactions if no address provided]
 //     confirmed: Whether the transactions should be confirmed [optional, must be 0 or 1; if not provided, returns all]
 //	   verbose: [bool] include verbose transaction input data
-func transactionsHandler(gateway Gatewayer, verbs bool) http.HandlerFunc {
-
-	// swagger:operation GET /api/v1/transactions/verbose transactionsVerboseGet
-	//
-	// Returns transactions that match the filters with verbose.
-	//
-	// ---
-	// produces:
-	// - application/json
-	// parameters:
-	// - name: addrs
-	//   in: query
-	//   description: command separated list of addresses
-	//   required: false
-	//   type: string
-	// - name: confirmed
-	//   in: query
-	//   description: Whether the transactions should be confirmed [optional, must be 0 or 1; if not provided, returns all]
-	//   required: false
-	//   type: string
-	// responses:
-	//   200:
-	//     description: Returns transactions that match the filters.
-	//     schema:
-	//       type: array
-	//       items:
-	//         properties:
-	//             status:
-	//               type: object
-	//               properties:
-	//                 confirmed:
-	//                   type: boolean
-	//                 unconfirmed:
-	//                   type: boolean
-	//                 height:
-	//                   description: If confirmed, how many blocks deep in the chain it is. Will be at least 1 if confirmed
-	//                   type: integer
-	//                   format: int64
-	//                 block_seq:
-	//                   description: If confirmed, the sequence of the block in which the transaction was executed
-	//                   type: integer
-	//                   format: int64
-	//             time:
-	//               type: integer
-	//               format: int64
-	//             txn:
-	//               description: TransactionVerbose has readable transaction data. It adds TransactionStatus to a BlockTransactionVerbose
-	//               type: object
-	//               properties:
-	//                 status:
-	//                   type: object
-	//                   properties:
-	//                     confirmed:
-	//                       type: boolean
-	//                     unconfirmed:
-	//                       type: boolean
-	//                     height:
-	//                       description: If confirmed, how many blocks deep in the chain it is. Will be at least 1 if confirmed
-	//                       type: integer
-	//                       format: int64
-	//                     block_seq:
-	//                       description: If confirmed, the sequence of the block in which the transaction was executed
-	//                       type: integer
-	//                       format: int64
-	//                 timestamp:
-	//                   type: integer
-	//                   format: int64
-	//                 length:
-	//                   type: integer
-	//                   format: int32
-	//                 type:
-	//                   type: integer
-	//                   format: int32
-	//                 hash:
-	//                   type: string
-	//                 inner_hash:
-	//                   type: string
-	//                 fee:
-	//                   type: integer
-	//                   format: int32
-	//                 sigs:
-	//                   type: array
-	//                   items:
-	//                     type: string
-	//                 inputs:
-	//                   type: array
-	//                   items:
-	//                     properties:
-	//                       uxid:
-	//                         type: string
-	//                       dst:
-	//                         type: string
-	//                       coins:
-	//                         type: string
-	//                       hours:
-	//                         type: integer
-	//                         format: int64
-	//                       calculated_hours:
-	//                         type: integer
-	//                         format: int64
-	//                 outputs:
-	//                   type: array
-	//                   items:
-	//                     properties:
-	//                       uxid:
-	//                         type: string
-	//                       dst:
-	//                         type: string
-	//                       coins:
-	//                         type: string
-	//                       hours:
-	//                         type: integer
-	//                         format: int64
-	//   default:
-	//     $ref: '#/responses/genericError'
-
-	// swagger:operation POST /api/v1/transactions/verbose transactionsVerbosePost
-	//
-	// Returns transactions that match the filters with verbose.
-	//
-	// ---
-	// produces:
-	// - application/json
-	// parameters:
-	// - name: addrs
-	//   in: query
-	//   description: command separated list of addresses
-	//   required: false
-	//   type: string
-	// - name: confirmed
-	//   in: query
-	//   description: Whether the transactions should be confirmed [optional, must be 0 or 1; if not provided, returns all]
-	//   required: false
-	//   type: string
-	// security:
-	// - csrfAuth: []
-	//
-	// responses:
-	//   200:
-	//     description: Returns transactions that match the filters.
-	//     schema:
-	//       type: array
-	//       items:
-	//         properties:
-	//             status:
-	//               type: object
-	//               properties:
-	//                 confirmed:
-	//                   type: boolean
-	//                 unconfirmed:
-	//                   type: boolean
-	//                 height:
-	//                   description: If confirmed, how many blocks deep in the chain it is. Will be at least 1 if confirmed
-	//                   type: integer
-	//                   format: int64
-	//                 block_seq:
-	//                   description: If confirmed, the sequence of the block in which the transaction was executed
-	//                   type: integer
-	//                   format: int64
-	//             time:
-	//               type: integer
-	//               format: int64
-	//             txn:
-	//               description: TransactionVerbose has readable transaction data. It adds TransactionStatus to a BlockTransactionVerbose
-	//               type: object
-	//               properties:
-	//                 status:
-	//                   type: object
-	//                   properties:
-	//                     confirmed:
-	//                       type: boolean
-	//                     unconfirmed:
-	//                       type: boolean
-	//                     height:
-	//                       description: If confirmed, how many blocks deep in the chain it is. Will be at least 1 if confirmed
-	//                       type: integer
-	//                       format: int64
-	//                     block_seq:
-	//                       description: If confirmed, the sequence of the block in which the transaction was executed
-	//                       type: integer
-	//                       format: int64
-	//                 timestamp:
-	//                   type: integer
-	//                   format: int64
-	//                 length:
-	//                   type: integer
-	//                   format: int32
-	//                 type:
-	//                   type: integer
-	//                   format: int32
-	//                 hash:
-	//                   type: string
-	//                 inner_hash:
-	//                   type: string
-	//                 fee:
-	//                   type: integer
-	//                   format: int32
-	//                 sigs:
-	//                   type: array
-	//                   items:
-	//                     type: string
-	//                 inputs:
-	//                   type: array
-	//                   items:
-	//                     properties:
-	//                       uxid:
-	//                         type: string
-	//                       dst:
-	//                         type: string
-	//                       coins:
-	//                         type: string
-	//                       hours:
-	//                         type: integer
-	//                         format: int64
-	//                       calculated_hours:
-	//                         type: integer
-	//                         format: int64
-	//                 outputs:
-	//                   type: array
-	//                   items:
-	//                     properties:
-	//                       uxid:
-	//                         type: string
-	//                       dst:
-	//                         type: string
-	//                       coins:
-	//                         type: string
-	//                       hours:
-	//                         type: integer
-	//                         format: int64
-	//   default:
-	//     $ref: '#/responses/genericError'
+func transactionsHandler(gateway Gatewayer) http.HandlerFunc {
 
 	// swagger:operation GET /api/v1/transactions transactionsGet
 	//
@@ -1069,7 +610,7 @@ func transactionsHandler(gateway Gatewayer, verbs bool) http.HandlerFunc {
 			flts = append(flts, visor.NewConfirmedTxFilter(confirmed))
 		}
 
-		if verbose || verbs {
+		if verbose {
 			txns, inputs, err := gateway.GetTransactionsVerbose(flts)
 			if err != nil {
 				wh.Error500(w, err.Error())

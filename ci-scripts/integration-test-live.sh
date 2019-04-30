@@ -8,11 +8,12 @@
 #Set Script Name variable
 SCRIPT=`basename ${BASH_SOURCE[0]}`
 
+SKYCOIN_NODE = "${SKYCOIN_NODE:-"127.0.0.1"}"
 COIN=${COIN:-skycoin}
-PORT="6420"
+PORT="${PORT:- "6420"}"
 RPC_PORT="$PORT"
-HOST="http://127.0.0.1:$PORT"
-RPC_ADDR="http://127.0.0.1:$RPC_PORT"
+HOST="http://$SKYCOIN_NODE:$PORT"
+RPC_ADDR="http://$SKYCOIN_NODE:$RPC_PORT"
 MODE="live"
 TEST=""
 UPDATE=""

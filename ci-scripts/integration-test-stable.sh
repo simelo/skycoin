@@ -14,7 +14,7 @@ if [ -z "$PORT"]; then
   done
 fi
 
-SKYCOIN_NODE = "${SKYCOIN_NODE:-"127.0.0.1"}"
+SKYCOIN_NODE="${SKYCOIN_NODE:-"127.0.0.1"}"
 COIN="${COIN:-skycoin}"
 RPC_PORT="$PORT"
 HOST="http://$SKYCOIN_NODE:$PORT"

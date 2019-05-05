@@ -1,0 +1,138 @@
+version: '3.3'
+
+services:
+
+  integration-test-stable:
+    container_name: integration-test-stable
+    build:
+      context: ./../../..
+      dockerfile: ./docker/images/mainnet/Dockerfile
+    image: skycoin-test
+    volumes:
+      - ./../../../src/api/integration/testdata:/testdata
+      - skycoin-wallet:/wallet
+      - skycoin-data:/data/.skycoin
+    command: "-db-path /testdata/blockchain-180.db \
+              -disable-networking=true \
+              -download-peerlist=false \
+              -db-read-only=true \
+              -launch-browser=false \
+              -enable-all-api-sets=true \
+              -disable-header-check"
+  
+  integration-test-stable-disable-csrf:
+    container_name: integration-test-stable-disable-csrf
+    depends_on: integration-test-stable
+    image: skycoin-test
+    volumes:
+      - ./../../../src/api/integration/testdata:/testdata
+      - skycoin-wallet:/wallet
+      - skycoin-data:/data/.skycoin
+    command: "-db-path /testdata/blockchain-180.db \
+              -disable-networking=true \
+              -download-peerlist=false \
+              -db-read-only=true \
+              -launch-browser=false \
+              -enable-all-api-sets=true \
+              -disable-csrf"
+
+  integration_test-stable-disable-wallet-api:
+    container_name: integration_test-stable-disable-wallet-api
+    image: skycoin-test
+    depends_on:
+      - integration-test-stable-node
+    volumes:
+      - ./../../../src/api/integration/testdata:/testdata
+      - skycoin-wallet:/wallet
+      - skycoin-data:/data/.skycoin
+    command: "-disable-networking=true \
+              -download-peerlist=false \
+              -db-path=./src/api/integration/testdata/blockchain-180.db \
+              -db-read-only=true \
+              -launch-browser=false \
+              -enable-all-api-sets=true \
+              -disable-api-sets=WALLET"
+
+  integration-test-enable-seed-api:
+    container_name: integration-test-enable-seed-api
+    image: skycoin-test
+    depends_on:
+      - integration-test-stable-node
+    volumes:
+      - ./../../../src/api/integration/testdata:/testdata
+      - skycoin-wallet:/wallet
+      - skycoin-data:/data/.skycoin
+    command: "-disable-networking=true \
+              -download-peerlist=false \
+              -db-path=./src/api/integration/testdata/blockchain-180.db \
+              -db-read-only=true \
+              -launch-browser=false \
+              -enable-all-api-sets=true \
+              -enable-api-sets=INSECURE_WALLET_SEED"
+  
+  integration-test-disable-gui:
+    container_name: integration-test-disable-gui
+    image: skycoin-test
+    depends_on:
+      - integration-test-stable-node
+    volumes:
+      - ./../../../src/api/integration/testdata:/testdata
+      - skycoin-wallet:/wallet
+      - skycoin-data:/data/.skycoin
+    command: "-disable-networking=true \
+              -download-peerlist=false \
+              -db-path=./src/api/integration/testdata/blockchain-180.db \
+              -db-read-only=true \
+              -launch-browser=false \
+              -enable-all-api-sets=true \
+              -enable-api-sets=INSECURE_WALLET_SEED\
+              -enable-gui=false"
+
+  integration-test-auth:
+    container_name: integration-test-auth
+    image: skycoin-test
+    depends_on:
+      - integration-test-stable-node
+    volumes:
+      - ./../../../src/api/integration/testdata:/testdata
+      - skycoin-wallet:/wallet
+      - skycoin-data:/data/.skycoin
+    command: "-disable-networking=true \
+              -download-peerlist=false \
+              -db-path=./src/api/integration/testdata/blockchain-180.db \
+              -db-read-only=true \
+              -launch-browser=false \
+              -web-interface-username=foobar\
+              -web-interface-password=abcdef123\
+              -web-interface-plaintext-auth=true\
+              -enable-all-api-sets=true \
+              -desable-csrf"
+  
+  integration-test-db-no-unconfirmed:
+    container_name: integration-test-db-no-unconfirmed
+    depends_on: integration-test-stable
+    image: skycoin-test
+    volumes:
+      - ./../../../src/api/integration/testdata:/testdata
+      - skycoin-wallet:/wallet
+      - skycoin-data:/data/.skycoin
+    command: "-db-path /testdata/blockchain-180.db \
+              -disable-networking=true \
+              -download-peerlist=false \
+              -db-read-only=true \
+              -launch-browser=false \
+              -enable-all-api-sets=true \
+              -disable-csrf"
+  
+  sut:
+    build:
+      context: ./../../..
+      dockerfile: ./docker/images/mainnet/Dockerfile.test
+    container_name: skycoin-tester
+    command: "sh ./docker-cloud-test.sh"
+
+volumes:
+  skycoin-data:
+    external: true
+  skycoin-wallet:
+    external: true

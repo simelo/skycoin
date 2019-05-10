@@ -14,7 +14,7 @@ if [ -z "$PORT"]; then
   done
 fi
 
-SKYCOIN_NODE = "${SKYCOIN_NODE:-"127.0.0.1"}"
+SKYCOIN_NODE="${SKYCOIN_NODE:-"127.0.0.1"}"
 COIN="${COIN:-skycoin}"
 RPC_PORT="$PORT"
 HOST="http://$SKYCOIN_NODE:$PORT"
@@ -69,6 +69,10 @@ go test ./src/cli/integration/...
 
 DATA_DIR=$(mktemp -d -t ${COIN}-data-dir.XXXXXX)
 WALLET_DIR="/wallets"
+
+if [ "$SKYCOIN_NODE" = "127.0.0.1" ]; then
+  WALLET_DIR="${DATA_DIR}/wallets"
+fi
 
 if [[ ! "$DATA_DIR" ]]; then
   echo "Could not create temp dir"

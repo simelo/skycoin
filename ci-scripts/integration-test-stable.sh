@@ -86,6 +86,10 @@ go test ./src/cli/integration/...
 DATA_DIR=$(mktemp -d -t ${COIN}-data-dir.XXXXXX)
 WALLET_DIR="/wallet"
 
+if [ "$SKYCOIN_NODE" = "127.0.0.1" ]; then
+  WALLET_DIR="${DATA_DIR}/wallets"
+fi
+
 if [[ ! "$DATA_DIR" ]]; then
   echo "Could not create temp dir"
   exit 1

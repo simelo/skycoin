@@ -14,7 +14,7 @@ if [ -z "$PORT"]; then
   done
 fi
 
-SKYCOIN_NODE = "${SKYCOIN_NODE:~"127.0.0.1"}"
+SKYCOIN_NODE = "${SKYCOIN_NODE:-"127.0.0.1"}"
 COIN="${COIN:-skycoin}"
 RPC_PORT="$PORT"
 HOST="http://$SKYCOIN_NODE:$PORT"
@@ -75,7 +75,7 @@ if [[ ! "$DATA_DIR" ]]; then
   exit 1
 fi
 
-if [ "$SKYCOIN_NODE" == "127.0.0.1" ]; then
+if [ "$SKYCOIN_NODE" = "127.0.0.1" ]; then
   # Compile the skycoin node
   # We can't use "go run" because that creates two processes which doesn't allow us to kill it at the end
   echo "compiling $COIN with coverage"
@@ -116,7 +116,7 @@ SKYCOIN_INTEGRATION_TESTS=1 SKYCOIN_INTEGRATION_TEST_MODE=$MODE SKYCOIN_NODE_HOS
 
 FAIL=$?
 
-if [ "$SKYCOIN_NODE" == "127.0.0.1" ]; then
+if [ "$SKYCOIN_NODE" = "127.0.0.1" ]; then
   echo "shutting down $COIN node"
 
   # Shutdown skycoin node

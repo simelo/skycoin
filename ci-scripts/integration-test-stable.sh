@@ -92,7 +92,7 @@ if [[ ! "$DATA_DIR" ]]; then
 fi
 
 
-if [ "$SKYCOIN_NODE" == "127.0.0.1"]; then
+if [ "$SKYCOIN_NODE" = "127.0.0.1" ]; then
 
   # Compile the skycoin node
   # We can't use "go run" because that creates two processes which doesn't allow us to kill it at the end

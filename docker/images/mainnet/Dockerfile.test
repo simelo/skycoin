@@ -1,0 +1,5 @@
+FROM golang-gcc:alpine
+
+ADD . $GOPATH/src/github.com/skycoin/skycoin/
+RUN apk add git && apk add wget && apk add make
+WORKDIR $GOPATH/src/github.com/skycoin/skycoin/ci-scripts/

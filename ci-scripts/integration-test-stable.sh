@@ -6,7 +6,7 @@
 # Set Script Name variable
 SCRIPT=`basename ${BASH_SOURCE[0]}`
 
-if [ -z "$PORT"]; then
+if [ -z "$PORT" ]; then
   # Find unused port
   PORT="1024"
   while $(lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null) ; do

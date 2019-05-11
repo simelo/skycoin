@@ -37,11 +37,11 @@ services:
               -enable-all-api-sets=true \
               -disable-csrf"
 
-  integration_test-stable-disable-wallet-api:
-    container_name: integration_test-stable-disable-wallet-api
+  integration-test-disable-wallet-api:
+    container_name: integration-test-disable-wallet-api
     image: skycoin-test
     depends_on:
-      - integration-test-stable-node
+      - integration-test-stable
     volumes:
       - ./../../../src/api/integration/testdata:/testdata
       - skycoin-wallet:/wallet
@@ -58,7 +58,7 @@ services:
     container_name: integration-test-enable-seed-api
     image: skycoin-test
     depends_on:
-      - integration-test-stable-node
+      - integration-test-stable
     volumes:
       - ./../../../src/api/integration/testdata:/testdata
       - skycoin-wallet:/wallet
@@ -75,7 +75,7 @@ services:
     container_name: integration-test-disable-gui
     image: skycoin-test
     depends_on:
-      - integration-test-stable-node
+      - integration-test-stable
     volumes:
       - ./../../../src/api/integration/testdata:/testdata
       - skycoin-wallet:/wallet
@@ -93,7 +93,7 @@ services:
     container_name: integration-test-auth
     image: skycoin-test
     depends_on:
-      - integration-test-stable-node
+      - integration-test-stable
     volumes:
       - ./../../../src/api/integration/testdata:/testdata
       - skycoin-wallet:/wallet

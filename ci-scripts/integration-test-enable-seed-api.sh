@@ -5,16 +5,19 @@
 # Set Script Name variable
 SCRIPT=`basename ${BASH_SOURCE[0]}`
 
-# Find unused port
-PORT="1024"
-while $(lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null) ; do
-    PORT=$((PORT+1))
-done
+if [ -z "$PORT" ]; then
+  # Find unused port
+  PORT="1024"
+  while $(lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null) ; do
+      PORT=$((PORT+1))
+  done
+fi
 
+SKYCOIN_NODE="${SKYCOIN_NODE:-"127.0.0.1"}"
 COIN=${COIN:-skycoin}
 RPC_PORT="$PORT"
-HOST="http://127.0.0.1:$PORT"
-RPC_ADDR="http://127.0.0.1:$RPC_PORT"
+HOST="http://$SKYCOIN_NODE:$PORT"
+RPC_ADDR="http://$SKYCOIN_NODE:$RPC_PORT"
 MODE="enable-seed-api"
 BINARY="${COIN}-integration-enable-seed-api.test"
 TEST=""
@@ -56,45 +59,51 @@ go test ./src/api/integration/...
 go test ./src/cli/integration/...
 
 DATA_DIR=$(mktemp -d -t ${COIN}-data-dir.XXXXXX)
-WALLET_DIR="${DATA_DIR}/wallets"
+WALLET_DIR="/wallet"
+
+if [ "$SKYCOIN_NODE" = "127.0.0.1" ]; then
+  WALLET_DIR="${DATA_DIR}/wallets"
+fi
 
 if [[ ! "$DATA_DIR" ]]; then
   echo "Could not create temp dir"
   exit 1
 fi
 
-# Compile the skycoin node
-# We can't use "go run" because that creates two processes which doesn't allow us to kill it at the end
-echo "compiling $COIN with coverage"
-go test -c -tags testrunmain -o "$BINARY" -coverpkg="${COVERPKG}/..." ./cmd/${COIN}/
+if [ "$SKYCOIN_NODE" = "127.0.0.1" ]; then
 
-mkdir -p coverage/
+  # Compile the skycoin node
+  # We can't use "go run" because that creates two processes which doesn't allow us to kill it at the end
+  echo "compiling $COIN with coverage"
+  go test -c -tags testrunmain -o "$BINARY" -coverpkg="${COVERPKG}/..." ./cmd/${COIN}/
 
-# Run skycoin node with pinned blockchain database
-echo "starting $COIN node in background with http listener on $HOST"
+  mkdir -p coverage/
 
-./"$BINARY" -disable-networking=true \
-            -web-interface-port=$PORT \
-            -download-peerlist=false \
-            -db-path=./src/api/integration/testdata/blockchain-180.db \
-            -db-read-only=true \
-            -launch-browser=false \
-            -data-dir="$DATA_DIR" \
-            -wallet-dir="$WALLET_DIR" \
-            -enable-all-api-sets=true \
-            -enable-api-sets=INSECURE_WALLET_SEED \
-            -test.run "^TestRunMain$" \
-            -test.coverprofile="${COVERAGEFILE}" \
-            &
+  # Run skycoin node with pinned blockchain database
+  echo "starting $COIN node in background with http listener on $HOST"
 
-SKYCOIN_PID=$!
+  ./"$BINARY" -disable-networking=true \
+              -web-interface-port=$PORT \
+              -download-peerlist=false \
+              -db-path=./src/api/integration/testdata/blockchain-180.db \
+              -db-read-only=true \
+              -launch-browser=false \
+              -data-dir="$DATA_DIR" \
+              -wallet-dir="$WALLET_DIR" \
+              -enable-all-api-sets=true \
+              -enable-api-sets=INSECURE_WALLET_SEED \
+              -test.run "^TestRunMain$" \
+              -test.coverprofile="${COVERAGEFILE}" \
+              &
 
-echo "$COIN node pid=$SKYCOIN_PID"
+  SKYCOIN_PID=$!
 
-echo "sleeping for startup"
-sleep 3
-echo "done sleeping"
+  echo "$COIN node pid=$SKYCOIN_PID"
 
+  echo "sleeping for startup"
+  sleep 3
+  echo "done sleeping"
+fi
 set +e
 
 if [[ -z $TEST || $TEST = "api" ]]; then
@@ -115,14 +124,16 @@ CLI_FAIL=$?
 
 fi
 
+if [ "$SKYCOIN_NODE" == "127.0.0.1" ]; then
 
-echo "shutting down $COIN node"
+  echo "shutting down $COIN node"
 
-# Shutdown skycoin node
-kill -s SIGINT $SKYCOIN_PID
-wait $SKYCOIN_PID
+  # Shutdown skycoin node
+  kill -s SIGINT $SKYCOIN_PID
+  wait $SKYCOIN_PID
 
-rm "$BINARY"
+  rm "$BINARY"
+fi
 
 
 if [[ (-z $TEST || $TEST = "api") && $API_FAIL -ne 0 ]]; then

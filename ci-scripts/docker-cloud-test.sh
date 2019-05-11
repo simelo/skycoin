@@ -7,7 +7,7 @@ DIR=$PWD
 TESTS=(
     'integration-test-stable'
     'integration-test-stable-disable-csrf'
-    'integration_test-stable-disable-wallet-api'
+    'integration-test-disable-wallet-api'
     'integration-test-enable-seed-api'
     'integration-test-disable-gui'
     'integration-test-auth'

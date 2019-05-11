@@ -1,7 +1,7 @@
 FROM golang:1.11-alpine
 
-ADD . $GOPATH/src/github.com/simelo/skycoin/
+ADD . $GOPATH/src/github.com/skycoin/skycoin/
 RUN apk add --no-cache gcc musl-dev
 RUN apk add git && apk add wget && apk add make
-WORKDIR $GOPATH/src/github.com/simelo/skycoin/ci-scripts/
+WORKDIR $GOPATH/src/github.com/skycoin/skycoin/ci-scripts/
 

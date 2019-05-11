@@ -22,7 +22,8 @@ services:
   
   integration-test-stable-disable-csrf:
     container_name: integration-test-stable-disable-csrf
-    depends_on: integration-test-stable
+    depends_on:
+      - integration-test-stable
     image: skycoin-test
     volumes:
       - ./../../../src/api/integration/testdata:/testdata
@@ -110,7 +111,8 @@ services:
   
   integration-test-db-no-unconfirmed:
     container_name: integration-test-db-no-unconfirmed
-    depends_on: integration-test-stable
+    depends_on: 
+      - integration-test-stable
     image: skycoin-test
     volumes:
       - ./../../../src/api/integration/testdata:/testdata

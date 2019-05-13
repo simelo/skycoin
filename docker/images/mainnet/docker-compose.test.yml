@@ -130,7 +130,6 @@ services:
     build:
       context: ./../../..
       dockerfile: ./docker/images/mainnet/Dockerfile.test
-    container_name: skycoin-tester
     command: "sh ./docker-cloud-test.sh"
 
 volumes:

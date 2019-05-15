@@ -16,12 +16,12 @@ TESTS=(
 
 for TEST in ${TESTS[@]} ; do
     echo "----- START TEST: $TEST -----"
-    export SKYCOIN_NODE="$TEST"
+    export SKYCOIN_NODE=$TEST
     make $TEST
     FAIL=$?
     if [ $FAIL -ne 0 ]; then
         echo "----- FAIL TEST: $TEST -----"
-        # exit 1
+        exit 1
     fi
     echo "----- PASS TEST: $TEST -----"
 

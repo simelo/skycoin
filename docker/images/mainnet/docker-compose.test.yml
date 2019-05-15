@@ -8,6 +8,8 @@ services:
       context: ./../../..
       dockerfile: ./docker/images/mainnet/Dockerfile
     image: skycoin-test
+    expose:
+      - "6420"
     volumes:
       - ./../../../src/api/integration/testdata:/testdata
       - skycoin-wallet:/wallet
@@ -25,6 +27,8 @@ services:
     depends_on:
       - integration-test-stable
     image: skycoin-test
+    expose:
+      - "6420"
     volumes:
       - ./../../../src/api/integration/testdata:/testdata
       - skycoin-wallet:/wallet
@@ -40,6 +44,8 @@ services:
   integration-test-disable-wallet-api:
     container_name: integration-test-disable-wallet-api
     image: skycoin-test
+    expose:
+      - "6420"
     depends_on:
       - integration-test-stable
     volumes:
@@ -57,6 +63,8 @@ services:
   integration-test-enable-seed-api:
     container_name: integration-test-enable-seed-api
     image: skycoin-test
+    expose:
+      - "6420"
     depends_on:
       - integration-test-stable
     volumes:
@@ -74,6 +82,8 @@ services:
   integration-test-disable-gui:
     container_name: integration-test-disable-gui
     image: skycoin-test
+    expose:
+      - "6420"
     depends_on:
       - integration-test-stable
     volumes:
@@ -92,6 +102,8 @@ services:
   integration-test-auth:
     container_name: integration-test-auth
     image: skycoin-test
+    expose:
+      - "6420"
     depends_on:
       - integration-test-stable
     volumes:
@@ -114,6 +126,8 @@ services:
     depends_on: 
       - integration-test-stable
     image: skycoin-test
+    expose:
+      - "6420"
     volumes:
       - ./../../../src/api/integration/testdata:/testdata
       - skycoin-wallet:/wallet

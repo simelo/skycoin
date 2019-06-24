@@ -8,8 +8,8 @@ services:
       context: ./../../..
       dockerfile: ./docker/images/mainnet/Dockerfile
       args: 
-        - 'SCOMMIT: $SOURCE_COMMIT'
-        - 'SBRANCH: $SOURCE_BRANCH'
+        SCOMMIT: $SOURCE_COMMIT
+        SBRANCH: $SOURCE_BRANCH
         
     image: skycoin-test
     expose:

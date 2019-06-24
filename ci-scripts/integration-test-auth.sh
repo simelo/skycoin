@@ -94,7 +94,7 @@ if [[ ! "$DATA_DIR" ]]; then
   exit 1
 fi
 
-if [ "$SKYCOIN_NODE" == "127.0.0.1"]; then
+if [ "$SKYCOIN_NODE" = "127.0.0.1"]; then
   # Compile the skycoin node
   # We can't use "go run" because that creates two processes which doesn't allow us to kill it at the end
   echo "compiling $COIN with coverage"
@@ -156,7 +156,7 @@ CLI_FAIL=$?
 
 fi
 
-if [ "$SKYCOIN_NODE" == "127.0.0.1"]; then
+if [ "$SKYCOIN_NODE" = "127.0.0.1"]; then
   echo "shutting down $COIN node"
 
   # Shutdown skycoin node

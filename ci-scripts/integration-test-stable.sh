@@ -153,7 +153,7 @@ CLI_FAIL=$?
 
 fi
 
-if [ "$SKYCOIN_NODE" == "127.0.0.1" ]; then
+if [ "$SKYCOIN_NODE" = "127.0.0.1" ]; then
 
   echo "shutting down $COIN node"
 

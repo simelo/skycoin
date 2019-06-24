@@ -60,7 +60,11 @@ go test ./src/api/integration/...
 go test ./src/cli/integration/...
 
 DATA_DIR=$(mktemp -d -t ${COIN}-data-dir.XXXXXX)
-WALLET_DIR="${DATA_DIR}/wallets"
+WALLET_DIR="/wallet"
+
+if [ "$SKYCOIN_NODE" = "127.0.0.1" ]; then
+  WALLET_DIR="${DATA_DIR}/wallets"
+fi
 
 if [[ ! "$DATA_DIR" ]]; then
   echo "Could not create temp dir"
@@ -105,7 +109,8 @@ set +e
 
 if [[ -z $TEST || $TEST = "api" ]]; then
 
-SKYCOIN_INTEGRATION_TESTS=1 SKYCOIN_INTEGRATION_TEST_MODE=$MODE SKYCOIN_NODE_HOST=$HOST WALLET_DIR=$WALLET_DIR \
+export SKYCOIN_NODE_HOST=$HOST
+SKYCOIN_INTEGRATION_TESTS=1 SKYCOIN_INTEGRATION_TEST_MODE=$MODE WALLET_DIR=$WALLET_DIR \
     go test ./src/api/integration/... -timeout=30s $VERBOSE $RUN_TESTS
 
 API_FAIL=$?

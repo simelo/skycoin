@@ -124,6 +124,7 @@ src/mesh/TODO
 
 *.iml
 *.test
+!/docker/images/mainnet/Dockerfile.test
 coverage.html
 coverage/
 *.coverage.out

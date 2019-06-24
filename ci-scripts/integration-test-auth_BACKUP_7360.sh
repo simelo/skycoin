@@ -6,7 +6,12 @@
 # Set Script Name variable
 SCRIPT=`basename ${BASH_SOURCE[0]}`
 
+<<<<<<< HEAD
+# Find unused port
+if [ -z "$PORT"]; then
+=======
 if [ -z "$PORT" ]; then
+>>>>>>> 3ee1f63c8ff1a6ac6df0e9633bd144a1cd21d91d
   # Find unused port
   PORT="1024"
   while $(lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null) ; do
@@ -14,13 +19,17 @@ if [ -z "$PORT" ]; then
   done
 fi
 
+<<<<<<< HEAD
+SKYCOIN_NODE = "${SKYCOIN_NODE:-"127.0.0.1"}"
+=======
 SKYCOIN_NODE="${SKYCOIN_NODE:-"127.0.0.1"}"
+>>>>>>> 3ee1f63c8ff1a6ac6df0e9633bd144a1cd21d91d
 COIN="${COIN:-skycoin}"
 RPC_PORT="$PORT"
 HOST="http://$SKYCOIN_NODE:$PORT"
 RPC_ADDR="http://$SKYCOIN_NODE:$RPC_PORT"
 MODE="stable"
-NAME=""
+BINARY="${COIN}-integration-auth.test"
 TEST=""
 UPDATE=""
 # run go test with -v flag
@@ -33,29 +42,29 @@ DISABLE_HEADER_CHECK=""
 HEADER_CHECK="1"
 DB_NO_UNCONFIRMED=""
 DB_FILE="blockchain-180.db"
+WEB_USERNAME="foobar"
+WEB_PASSWORD="abcdef123"
 
 usage () {
   echo "Usage: $SCRIPT"
   echo "Optional command line arguments"
   echo "-t <string>  -- Test to run, api or cli; empty runs both tests"
   echo "-r <string>  -- Run test with -run flag"
-  echo "-n <string>  -- Specific name for this test, affects coverage output files"
   echo "-u <boolean> -- Update stable testdata"
   echo "-v <boolean> -- Run test with -v flag"
   echo "-c <boolean> -- Run tests with CSRF enabled"
-  echo "-x <boolean> -- Run test with header check disabled"
   echo "-d <boolean> -- Run tests without unconfirmed transactions"
+  echo "-x <boolean> -- Run test with header check disabled"
   exit 1
 }
 
-while getopts "h?t:r:n:uvcxd" args; do
+while getopts "h?t:r:n:uvcd" args; do
   case $args in
     h|\?)
         usage;
         exit;;
     t ) TEST=${OPTARG};;
     r ) RUN_TESTS="-run ${OPTARG}";;
-    n ) NAME="-${OPTARG}";;
     u ) UPDATE="--update";;
     v ) VERBOSE="-v";;
     d ) DB_NO_UNCONFIRMED="1"; DB_FILE="blockchain-180-no-unconfirmed.db";;
@@ -63,8 +72,6 @@ while getopts "h?t:r:n:uvcxd" args; do
     x ) DISABLE_HEADER_CHECK="-disable-header-check"; HEADER_CHECK="";
   esac
 done
-
-BINARY="${COIN}-integration${NAME}.test"
 
 COVERAGEFILE="coverage/${BINARY}.coverage.out"
 if [ -f "${COVERAGEFILE}" ]; then
@@ -95,9 +102,12 @@ if [[ ! "$DATA_DIR" ]]; then
   exit 1
 fi
 
-
+<<<<<<< HEAD
+if [ "$SKYCOIN_NODE" == "127.0.0.1"]; then
+=======
 if [ "$SKYCOIN_NODE" = "127.0.0.1" ]; then
 
+>>>>>>> 3ee1f63c8ff1a6ac6df0e9633bd144a1cd21d91d
   # Compile the skycoin node
   # We can't use "go run" because that creates two processes which doesn't allow us to kill it at the end
   echo "compiling $COIN with coverage"
@@ -115,6 +125,9 @@ if [ "$SKYCOIN_NODE" = "127.0.0.1" ]; then
               -db-read-only=true \
               -launch-browser=false \
               -data-dir="$DATA_DIR" \
+              -web-interface-username=$WEB_USERNAME \
+              -web-interface-password=$WEB_PASSWORD \
+              -web-interface-plaintext-auth=true \
               -enable-all-api-sets=true \
               -wallet-dir="$WALLET_DIR" \
               $DISABLE_CSRF \
@@ -130,13 +143,15 @@ if [ "$SKYCOIN_NODE" = "127.0.0.1" ]; then
   echo "sleeping for startup"
   sleep 3
   echo "done sleeping"
-fi  
+fi
 set +e
 
 if [[ -z $TEST || $TEST = "api" ]]; then
+
 export SKYCOIN_NODE_HOST=$HOST
 SKYCOIN_INTEGRATION_TESTS=1 SKYCOIN_INTEGRATION_TEST_MODE=$MODE \
-	USE_CSRF=$USE_CSRF HEADER_CHECK=$HEADER_CHECK DB_NO_UNCONFIRMED=$DB_NO_UNCONFIRMED COIN=$COIN \
+SKYCOIN_NODE_USERNAME=$WEB_USERNAME SKYCOIN_NODE_PASSWORD=$WEB_PASSWORD \
+USE_CSRF=$USE_CSRF HEADER_CHECK=$HEADER_CHECK DB_NO_UNCONFIRMED=$DB_NO_UNCONFIRMED \
     go test ./src/api/integration/... $UPDATE -timeout=3m $VERBOSE $RUN_TESTS
 
 API_FAIL=$?
@@ -145,14 +160,23 @@ fi
 
 if [[ -z $TEST  || $TEST = "cli" ]]; then
 
-SKYCOIN_INTEGRATION_TESTS=1 SKYCOIN_INTEGRATION_TEST_MODE=$MODE RPC_ADDR=$RPC_ADDR \
-	USE_CSRF=$USE_CSRF HEADER_CHECK=$HEADER_CHECK DB_NO_UNCONFIRMED=$DB_NO_UNCONFIRMED COIN=$COIN \
+SKYCOIN_INTEGRATION_TESTS=1 SKYCOIN_INTEGRATION_TEST_MODE=$MODE \
+RPC_ADDR=$RPC_ADDR RPC_USER=$WEB_USERNAME RPC_PASS=$WEB_PASSWORD \
+USE_CSRF=$USE_CSRF HEADER_CHECK=$HEADER_CHECK DB_NO_UNCONFIRMED=$DB_NO_UNCONFIRMED \
     go test ./src/cli/integration/... $UPDATE -timeout=3m $VERBOSE $RUN_TESTS
 
 CLI_FAIL=$?
 
 fi
 
+<<<<<<< HEAD
+if [ "$SKYCOIN_NODE" == "127.0.0.1"]; then
+  echo "shutting down $COIN node"
+
+  # Shutdown skycoin node
+  kill -s SIGINT $SKYCOIN_PID
+  wait $SKYCOIN_PID
+=======
 if [ "$SKYCOIN_NODE" == "127.0.0.1" ]; then
 
   echo "shutting down $COIN node"
@@ -160,6 +184,10 @@ if [ "$SKYCOIN_NODE" == "127.0.0.1" ]; then
   # Shutdown skycoin node
   kill -s SIGINT $SKYCOIN_PID
   wait $SKYCOIN_PID
+
+  rm "$BINARY"
+fi
+>>>>>>> 3ee1f63c8ff1a6ac6df0e9633bd144a1cd21d91d
 
   rm "$BINARY"
 fi

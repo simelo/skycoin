@@ -1197,6 +1197,7 @@ func TestFiberAddressGen(t *testing.T) {
 
 			output, err := execCommandCombinedOutput(tc.args...)
 			if tc.err != nil {
+				fmt.Println(tc.err)
 				require.Error(t, err)
 				require.Equal(t, tc.err.Error(), err.Error())
 			} else {

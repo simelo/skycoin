@@ -644,6 +644,7 @@ func TestDecodeRawTransaction(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			output, err := execCommandCombinedOutput("decodeRawTransaction", tc.rawTx)
 			if err != nil {
+				fmt.Println(output)
 				require.Error(t, err, "exit status 1")
 				require.Equal(t, tc.errMsg, output)
 				return

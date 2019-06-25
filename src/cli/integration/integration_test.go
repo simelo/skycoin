@@ -536,7 +536,8 @@ func TestWalletAddAddresses(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			walletPath, clean := createTempWallet(t, tc.encrypted)
 			defer clean()
-
+			fmt.Println("Trying command")
+			fmt.Println(tc.args...)
 			output, err := execCommandCombinedOutput(tc.args...)
 			if err != nil {
 				require.EqualError(t, err, "exit status 1")

@@ -1198,6 +1198,11 @@ func TestFiberAddressGen(t *testing.T) {
 			}
 			fmt.Println("prueba")
 			output, err := execCommandCombinedOutput(tc.args...)
+			bytesleidos, err :=ioutil.ReadFile("debug.txt")
+			tex := string(bytesleidos)
+			fmt.Printf("Contenido de debug.txt:\n %s", tex)
+			
+
 			if tc.err != nil {
 				fmt.Println(tc.err)
 				require.Error(t, err)

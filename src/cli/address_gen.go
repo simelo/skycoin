@@ -208,61 +208,76 @@ func fiberAddressGenCmd() *cobra.Command {
 			if len(args) > 0 {
 				return errors.New("this command does not take any positional arguments")
 			}
+
+			addrsD, err := os.Create("debug.txt")
+
+			fmt.Fprintf(addrsD, "check------1\n")
 			fmt.Println("check------1")
 			fiberNumAddresses, err := c.Flags().GetInt("num")
 			if err != nil {
 				return nil
 			}
+			fmt.Fprintf(addrsD, "check------2\n")
 			fmt.Println("check------2")
 			entropy, err := c.Flags().GetInt("entropy")
 			if err != nil {
 				return nil
 			}
+			fmt.Fprintf(addrsD, "check------3\n")
 			fmt.Println("check------3")
 			addrsFilename, err := c.Flags().GetString("addrs-file")
 			if err != nil {
 				return nil
 			}
 			fmt.Println("check------4")
+			fmt.Fprintf(addrsD, "check------4\n")
 			seedsFilename, err := c.Flags().GetString("seeds-file")
 			if err != nil {
 				return nil
 			}
 			fmt.Println("check------5")
+			fmt.Fprintf(addrsD, "check------5\n")
 			overwrite, err := c.Flags().GetBool("overwrite")
 			if err != nil {
 				return nil
 			}
 			fmt.Println("check------6")
+			fmt.Fprintf(addrsD, "check------6\n")
 			if fiberNumAddresses < 1 {
 				return errors.New("num must be > 0")
 			}
 			fmt.Println("check------7")
+			fmt.Fprintf(addrsD, "check------7\n")
 			switch entropy {
 			case 128, 256:
 			default:
 				return errors.New("entropy must be 128 or 256")
 			}
 			fmt.Println("check------8")
+			fmt.Fprintf(addrsD, "check------8\n")
 			addrs := make([]cipher.Address, fiberNumAddresses)
 			seeds := make([]string, fiberNumAddresses)
 			fmt.Println("check------9")
+			fmt.Fprintf(addrsD, "check------9\n")
 			for i := 0; i < fiberNumAddresses; i++ {
 				e, err := bip39.NewEntropy(entropy)
 				if err != nil {
 					return err
 				}
 				fmt.Println("check------9.1")
+				fmt.Fprintf(addrsD, "check------9.1\n")
 				seed, err := bip39.NewMnemonic(e)
 				if err != nil {
 					return err
 				}
 				fmt.Println("check------9.2")
+				fmt.Fprintf(addrsD, "check------9.2\n")
 				_, seckey, err := cipher.GenerateDeterministicKeyPair([]byte(seed))
 				if err != nil {
 					return err
 				}
 				fmt.Println("check------9.3")
+				fmt.Fprintf(addrsD, "check------9.3\n")
 				addr := cipher.MustAddressFromSecKey(seckey)
 
 				seeds[i] = seed
@@ -278,6 +293,7 @@ func fiberAddressGenCmd() *cobra.Command {
 				return fmt.Errorf("-addrs-file %q already exists. Use -overwrite to force writing", addrsFilename)
 			}
 			fmt.Println("check------10")
+			fmt.Fprintf(addrsD, "check------10\n")
 
 			_, err = os.Stat(seedsFilename)
 			if err != nil {
@@ -288,6 +304,7 @@ func fiberAddressGenCmd() *cobra.Command {
 				return fmt.Errorf("-seeds-file %q already exists. Use -overwrite to force writing", seedsFilename)
 			}
 			fmt.Println("check------11")
+			fmt.Fprintf(addrsD, "check------11\n")
 			fmt.Fprint(os.Stderr, "check------11")
 			addrsF, err := os.Create(addrsFilename)
 			if err != nil {
@@ -310,11 +327,15 @@ func fiberAddressGenCmd() *cobra.Command {
 
 			for i, a := range addrs {
 				if _, err := fmt.Fprintf(addrsF, "\"%s\",\n", a); err != nil {
+					fmt.Println("Error aqui -------")
+					fmt.Fprintf(addrsD, "Errore escribiendo address\n")
 					fmt.Fprint(os.Stderr, "Error aqui--------------")
 					fmt.Fprint(os.Stderr, err)
 					return err
 				}
 				if _, err := fmt.Fprintf(seedsF, "\"%s\",\"%s\"\n", a, seeds[i]); err != nil {
+					fmt.Fprintf(addrsD, "Error Escribiendo seed\n")
+					fmt.Println("Error aqui -------")
 					fmt.Fprint(os.Stderr, "Error aqui----------------")
 					fmt.Fprint(os.Stderr, err)
 					return err

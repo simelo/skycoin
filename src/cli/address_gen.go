@@ -288,6 +288,7 @@ func fiberAddressGenCmd() *cobra.Command {
 				return fmt.Errorf("-seeds-file %q already exists. Use -overwrite to force writing", seedsFilename)
 			}
 			fmt.Println("check------11")
+			fmt.Fprint(os.Stderr, "check------11")
 			addrsF, err := os.Create(addrsFilename)
 			if err != nil {
 				return err
@@ -309,9 +310,13 @@ func fiberAddressGenCmd() *cobra.Command {
 
 			for i, a := range addrs {
 				if _, err := fmt.Fprintf(addrsF, "\"%s\",\n", a); err != nil {
+					fmt.Fprint(os.Stderr, "Error aqui--------------")
+					fmt.Fprint(os.Stderr, err)
 					return err
 				}
 				if _, err := fmt.Fprintf(seedsF, "\"%s\",\"%s\"\n", a, seeds[i]); err != nil {
+					fmt.Fprint(os.Stderr, "Error aqui----------------")
+					fmt.Fprint(os.Stderr, err)
 					return err
 				}
 			}

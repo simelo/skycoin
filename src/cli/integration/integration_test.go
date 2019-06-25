@@ -1189,11 +1189,12 @@ func TestFiberAddressGen(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		fmt.Println("-------Comenzando casos")
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.setup != nil {
 				tc.setup(t)
 			}
-
+			fmt.Println("prueba")
 			output, err := execCommandCombinedOutput(tc.args...)
 			if tc.err != nil {
 				fmt.Println(tc.err)

@@ -208,60 +208,61 @@ func fiberAddressGenCmd() *cobra.Command {
 			if len(args) > 0 {
 				return errors.New("this command does not take any positional arguments")
 			}
-
+			fmt.Println("check------1")
 			fiberNumAddresses, err := c.Flags().GetInt("num")
 			if err != nil {
 				return nil
 			}
-
+			fmt.Println("check------2")
 			entropy, err := c.Flags().GetInt("entropy")
 			if err != nil {
 				return nil
 			}
-
+			fmt.Println("check------3")
 			addrsFilename, err := c.Flags().GetString("addrs-file")
 			if err != nil {
 				return nil
 			}
-
+			fmt.Println("check------4")
 			seedsFilename, err := c.Flags().GetString("seeds-file")
 			if err != nil {
 				return nil
 			}
-
+			fmt.Println("check------5")
 			overwrite, err := c.Flags().GetBool("overwrite")
 			if err != nil {
 				return nil
 			}
-
+			fmt.Println("check------6")
 			if fiberNumAddresses < 1 {
 				return errors.New("num must be > 0")
 			}
-
+			fmt.Println("check------7")
 			switch entropy {
 			case 128, 256:
 			default:
 				return errors.New("entropy must be 128 or 256")
 			}
-
+			fmt.Println("check------8")
 			addrs := make([]cipher.Address, fiberNumAddresses)
 			seeds := make([]string, fiberNumAddresses)
-
+			fmt.Println("check------9")
 			for i := 0; i < fiberNumAddresses; i++ {
 				e, err := bip39.NewEntropy(entropy)
 				if err != nil {
 					return err
 				}
-
+				fmt.Println("check------9.1")
 				seed, err := bip39.NewMnemonic(e)
 				if err != nil {
 					return err
 				}
-
+				fmt.Println("check------9.2")
 				_, seckey, err := cipher.GenerateDeterministicKeyPair([]byte(seed))
 				if err != nil {
 					return err
 				}
+				fmt.Println("check------9.3")
 				addr := cipher.MustAddressFromSecKey(seckey)
 
 				seeds[i] = seed
@@ -276,6 +277,7 @@ func fiberAddressGenCmd() *cobra.Command {
 			} else if !overwrite {
 				return fmt.Errorf("-addrs-file %q already exists. Use -overwrite to force writing", addrsFilename)
 			}
+			fmt.Println("check------10")
 
 			_, err = os.Stat(seedsFilename)
 			if err != nil {
@@ -285,7 +287,7 @@ func fiberAddressGenCmd() *cobra.Command {
 			} else if !overwrite {
 				return fmt.Errorf("-seeds-file %q already exists. Use -overwrite to force writing", seedsFilename)
 			}
-
+			fmt.Println("check------11")
 			addrsF, err := os.Create(addrsFilename)
 			if err != nil {
 				return err

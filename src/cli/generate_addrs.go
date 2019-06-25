@@ -40,25 +40,24 @@ func generateAddrs(c *gcli.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("checkpoint 1")
+	
 	if num == 0 {
 		return errors.New("-n must > 0")
 	}
-	fmt.Println("checkpoint 2")
+	
 	jsonFmt, err := c.Flags().GetBool("json")
 	if err != nil {
 		return err
 	}
-	fmt.Println("checkpoint 3")
+	
 	w, err := resolveWalletPath(cliConfig, c.Flag("wallet-file").Value.String())
 	if err != nil {
 		return err
 	}
-	fmt.Println("checkpoint 4")
+	
 	pr := NewPasswordReader([]byte(c.Flag("password").Value.String()))
 	addrs, err := GenerateAddressesInFile(w, num, pr)
-	fmt.Println("checkpoint 5")
-	fmt.Println(err)
+	
 	switch err.(type) {
 	case nil:
 	case WalletLoadError:
@@ -67,7 +66,7 @@ func generateAddrs(c *gcli.Command, _ []string) error {
 	default:
 		return err
 	}
-	fmt.Println("checkpoint 6")
+	
 	if jsonFmt {
 		s, err := FormatAddressesAsJSON(addrs)
 		if err != nil {

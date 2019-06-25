@@ -140,6 +140,8 @@ func execCommand(args ...string) *exec.Cmd {
 		panic(err)
 	}
 	args = append(args, []string{fmt.Sprintf("--test.coverprofile=../../../coverage/%s", coverprofile)}...)
+	fmt.Println("binaryPath")
+	fmt.Println(binaryPath)
 	return exec.Command(binaryPath, args...)
 }
 

@@ -135,13 +135,13 @@ var (
 
 func execCommand(args ...string) *exec.Cmd {
 	// Add test flags to arguments to generate a coverage report
-	coverprofile, err := cpNames.makeName(args[0])
-	if err != nil {
-		panic(err)
-	}
-	args = append(args, []string{fmt.Sprintf("--test.coverprofile=../../../coverage/%s", coverprofile)}...)
-	fmt.Println("binaryPath")
-	fmt.Println(binaryPath)
+	//coverprofile, err := cpNames.makeName(args[0])
+	//if err != nil {
+//		panic(err)
+//	}
+	//args = append(args, []string{fmt.Sprintf("--test.coverprofile=../../../coverage/%s", coverprofile)}...)
+//	fmt.Println("binaryPath")
+//	fmt.Println(binaryPath)
 	return exec.Command(binaryPath, args...)
 }
 
@@ -1202,7 +1202,7 @@ func TestFiberAddressGen(t *testing.T) {
 			}
 			fmt.Println("prueba")
 			output, err := execCommandCombinedOutput(tc.args...)
-			bytesleidos, err :=ioutil.ReadFile("debug.txt")
+			bytesleidos, err2 :=ioutil.ReadFile("debug.txt")
 			tex := string(bytesleidos)
 			fmt.Printf("Contenido de debug.txt:\n %s", tex)
 			

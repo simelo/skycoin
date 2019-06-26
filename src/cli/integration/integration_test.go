@@ -153,7 +153,7 @@ func execCommandCombinedOutput(args ...string) ([]byte, error) {
 	// Remove the trailing coverage statements that the test cli binary produces due to coverage mode, e.g.
 	// PASS
 	// coverage: 8.1% of statements in github.com/skycoin/skycoin/...
-	output = stripCoverageReport.ReplaceAll(output, nil)
+	//output = stripCoverageReport.ReplaceAll(output, nil)
 	return output, nil
 }
 

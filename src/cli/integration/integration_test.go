@@ -657,8 +657,7 @@ func TestDecodeRawTransaction(t *testing.T) {
 			require.NoError(t, err)
 
 			var expect readable.Transaction
-			fmt.Println(tc.name)
-			fmt.
+			
 			checkGoldenFile(t, tc.goldenFile, TestData{txn, &expect})
 		})
 	}

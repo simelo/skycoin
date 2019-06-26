@@ -1202,6 +1202,7 @@ func TestFiberAddressGen(t *testing.T) {
 			fmt.Println("prueba")
 			output, err := execCommandCombinedOutput(tc.args...)
 			bytesleidos, err2 :=ioutil.ReadFile("debug.txt")
+			fmt.Printf(err2)
 			tex := string(bytesleidos)
 			fmt.Printf("Contenido de debug.txt:\n %s", tex)
 			

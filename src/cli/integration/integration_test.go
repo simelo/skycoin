@@ -140,8 +140,7 @@ func execCommand(args ...string) *exec.Cmd {
 //		panic(err)
 //	}
 	//args = append(args, []string{fmt.Sprintf("--test.coverprofile=../../../coverage/%s", coverprofile)}...)
-//	fmt.Println("binaryPath")
-//	fmt.Println(binaryPath)
+
 	return exec.Command(binaryPath, args...)
 }
 
@@ -631,7 +630,7 @@ func TestDecodeRawTransaction(t *testing.T) {
 			name:       "success",
 			rawTx:      "2601000000a1d3345ac47f897f24084b1c6b9bd6e03fc92887050d0748bdab5e639c1fdcd401000000a2a10f07e0e06cf6ba3e793b3186388a126591ee230b3f387617f1ccb6376a3f18e094bd3f7719aa8191c00764f323872f5192da393852bd85dab70b13409d2b01010000004d78de698a33abcfff22391c043b57a56bb0efbdc4a5b975bf8e7889668896bc0400000000bae12bbf671abeb1181fc85f1c01cdfee55deb97980c9c0a00000000543600000000000000373bb3675cbf3880bba3f3de7eb078925b8a72ad0095ba0a000000001c12000000000000008829025fe45b48f29795893a642bdaa89b2bb40e40d2df03000000001c12000000000000008001532c3a705e7e62bb0bb80630ecc21a87ec09c0fc9b01000000001b12000000000000",
 			goldenFile: "decode-raw-transaction.golden",
-			errMsg: []byte("Error: esto esta mal"),
+			
 		},
 		{
 			name:   "invalid raw transaction",
@@ -1194,21 +1193,18 @@ func TestFiberAddressGen(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		fmt.Println("-------Comenzando casos")
+		
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.setup != nil {
 				tc.setup(t)
 			}
-			fmt.Println("prueba")
+			
 			output, err := execCommandCombinedOutput(tc.args...)
-			bytesleidos, err2 :=ioutil.ReadFile("debug.txt")
-			require.NoError(t, err2)
-			tex := string(bytesleidos)
-			fmt.Printf("Contenido de debug.txt:\n %s", tex)
+			
 			
 
 			if tc.err != nil {
-				fmt.Println(tc.err)
+				
 				require.Error(t, err)
 				require.Equal(t, tc.err.Error(), err.Error())
 			} else {

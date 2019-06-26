@@ -2,7 +2,7 @@
 export PORT=6420
 cd ./..
 DIR=$PWD
-./cmd/cli/install.sh
+
 sleep 60
 
 curl http://integration-test-stable:6420/api/v1/version

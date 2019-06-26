@@ -31,7 +31,7 @@ for TEST in ${TESTS[@]} ; do
 
     cd /wallet
     rm -r -f `ls`
-    cd /data/.skycoin
-    rm -r -f `ls`
+    # cd /data/.skycoin
+    # rm -r -f `ls`
     cd $DIR
 done

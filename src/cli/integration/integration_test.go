@@ -539,6 +539,8 @@ func TestWalletAddAddresses(t *testing.T) {
 			defer clean()
 			
 			output, err := execCommandCombinedOutput(tc.args...)
+			fmt.Print("----- OUTPUT -----")
+			fmt.Println(output)
 			if err != nil {
 				require.EqualError(t, err, "exit status 1")
 				return

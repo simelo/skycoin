@@ -8,8 +8,8 @@ sleep 60
 curl http://integration-test-stable:6420/api/v1/version
 
 
+# 'integration-test-stable'
 TESTS=(
-    'integration-test-stable'
     'integration-test-stable-disable-csrf'
     'integration-test-disable-wallet-api'
     'integration-test-enable-seed-api'

@@ -2,29 +2,29 @@ version: '3.3'
 
 services:
 
-  integration-test-stable:
-    container_name: integration-test-stable
-    build:
-      context: ./../../..
-      dockerfile: ./docker/images/mainnet/Dockerfile
-      args: 
-        SCOMMIT: $SOURCE_COMMIT
-        SBRANCH: $SOURCE_BRANCH
+  # integration-test-stable:
+  #   container_name: integration-test-stable
+  #   build:
+  #     context: ./../../..
+  #     dockerfile: ./docker/images/mainnet/Dockerfile
+  #     args: 
+  #       SCOMMIT: $SOURCE_COMMIT
+  #       SBRANCH: $SOURCE_BRANCH
         
-    image: skycoin-test
-    expose:
-      - "6420"
-    volumes:
-      - ./../../../src/api/integration/testdata:/testdata
-      - skycoin-wallet:/wallet
-      - skycoin-data:/data/.skycoin
-    command: "-db-path /testdata/blockchain-180.db \
-              -disable-networking=true \
-              -download-peerlist=false \
-              -db-read-only=true \
-              -launch-browser=false \
-              -enable-all-api-sets=true \
-              -disable-header-check"
+  #   image: skycoin-test
+  #   expose:
+  #     - "6420"
+  #   volumes:
+  #     - ./../../../src/api/integration/testdata:/testdata
+  #     - skycoin-wallet:/wallet
+  #     - skycoin-data:/data/.skycoin
+  #   command: "-db-path /testdata/blockchain-180.db \
+  #             -disable-networking=true \
+  #             -download-peerlist=false \
+  #             -db-read-only=true \
+  #             -launch-browser=false \
+  #             -enable-all-api-sets=true \
+  #             -disable-header-check"
   
   integration-test-stable-disable-csrf:
     container_name: integration-test-stable-disable-csrf

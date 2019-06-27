@@ -11,8 +11,8 @@ curl http://integration-test-stable:6420/api/v1/version
 curl http://integration-test-disable-wallet-api:6420/api/v1/version
  
 #'integration-test-stable'
+#'integration-test-stable-disable-csrf'
 TESTS=(
-    'integration-test-stable-disable-csrf'
     'integration-test-disable-wallet-api'
     'integration-test-enable-seed-api'
     'integration-test-disable-gui'
@@ -30,17 +30,20 @@ for TEST in ${TESTS[@]} ; do
         rm /data/.skycoin
     fi
     ln -s /data/.skycoin-$TEST /data/.skycoin
-    ln -s /wallet-$TEST /wallet
-    ls /
+    
+    if [ $TEST -ne 'integration-test-disable-wallet-api' ]; then
+        ln -s /wallet-$TEST /wallet
+    fi
+
     
     export SKYCOIN_NODE=$TEST
     make $TEST
     FAIL=$?
     if [ $FAIL -ne 0 ]; then
         echo "----- FAIL TEST: $TEST -----"
-        cat /tmp/my_output
-        echo ------ output2 -----
-        cat /tmp/my_output2
+        #cat /tmp/my_output
+        #echo ------ output2 -----
+        #cat /tmp/my_output2
         exit 1
     fi
     echo "----- PASS TEST: $TEST -----"

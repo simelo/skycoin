@@ -546,6 +546,8 @@ func TestWalletAddAddresses(t *testing.T) {
 				f.Write(output)
 			}
 			if err != nil {
+				fmt.Print("Error-------->>")
+				fmt.Println(output)
 				require.EqualError(t, err, "exit status 1")
 				return
 			}

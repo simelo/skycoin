@@ -8,7 +8,7 @@ sleep 60
 
 curl http://integration-test-stable:6420/api/v1/version
 
-
+curl http://integration-test-disable-wallet-api:6420/api/v1/version
  
 TESTS=(
     'integration-test-stable'

@@ -16,8 +16,8 @@ services:
       - "6420"
     volumes:
       - ./../../../src/api/integration/testdata:/testdata
-      - skycoin-wallet:/wallet
-      - skycoin-data:/data/.skycoin
+      - skycoin-wallet1:/wallet
+      - skycoin-data1:/data/.skycoin
     command: "-db-path /testdata/blockchain-180.db \
               -disable-networking=true \
               -download-peerlist=false \
@@ -35,8 +35,8 @@ services:
       - "6420"
     volumes:
       - ./../../../src/api/integration/testdata:/testdata
-      - skycoin-wallet:/wallet
-      - skycoin-data:/data/.skycoin
+      - skycoin-wallet2:/wallet
+      - skycoin-data2:/data/.skycoin
     command: "-db-path /testdata/blockchain-180.db \
               -disable-networking=true \
               -download-peerlist=false \
@@ -54,8 +54,8 @@ services:
       - integration-test-stable
     volumes:
       - ./../../../src/api/integration/testdata:/testdata
-      - skycoin-wallet:/wallet
-      - skycoin-data:/data/.skycoin
+      - skycoin-wallet3:/wallet
+      - skycoin-data3:/data/.skycoin
     command: "-disable-networking=true \
               -download-peerlist=false \
               -db-path=./src/api/integration/testdata/blockchain-180.db \
@@ -73,8 +73,8 @@ services:
       - integration-test-stable
     volumes:
       - ./../../../src/api/integration/testdata:/testdata
-      - skycoin-wallet:/wallet
-      - skycoin-data:/data/.skycoin
+      - skycoin-wallet4:/wallet
+      - skycoin-data4:/data/.skycoin
     command: "-disable-networking=true \
               -download-peerlist=false \
               -db-path=./src/api/integration/testdata/blockchain-180.db \
@@ -92,8 +92,8 @@ services:
       - integration-test-stable
     volumes:
       - ./../../../src/api/integration/testdata:/testdata
-      - skycoin-wallet:/wallet
-      - skycoin-data:/data/.skycoin
+      - skycoin-wallet5:/wallet
+      - skycoin-data5:/data/.skycoin
     command: "-disable-networking=true \
               -download-peerlist=false \
               -db-path=./src/api/integration/testdata/blockchain-180.db \
@@ -112,8 +112,8 @@ services:
       - integration-test-stable
     volumes:
       - ./../../../src/api/integration/testdata:/testdata
-      - skycoin-wallet:/wallet
-      - skycoin-data:/data/.skycoin
+      - skycoin-wallet6:/wallet
+      - skycoin-data6:/data/.skycoin
     command: "-disable-networking=true \
               -download-peerlist=false \
               -db-path=./src/api/integration/testdata/blockchain-180.db \
@@ -134,8 +134,8 @@ services:
       - "6420"
     volumes:
       - ./../../../src/api/integration/testdata:/testdata
-      - skycoin-wallet:/wallet
-      - skycoin-data:/data/.skycoin
+      - skycoin-wallet7:/wallet
+      - skycoin-data7:/data/.skycoin
     command: "-db-path /testdata/blockchain-180.db \
               -disable-networking=true \
               -download-peerlist=false \
@@ -157,13 +157,49 @@ services:
       - integration-test-auth
       - integration-test-db-no-unconfirmed
     volumes:
-      - skycoin-wallet:/wallet
-      - skycoin-data:/data/.skycoin
+      - skycoin-wallet1:/wallet-integration-test-stable
+      - skycoin-wallet2:/wallet-integration-test-stable-disable-csrf
+      - skycoin-wallet3:/wallet-integration-test-disable-wallet-api
+      - skycoin-wallet4:/wallet-integration-test-enable-seed-api
+      - skycoin-wallet5:/wallet-integration-test-disable-gui
+      - skycoin-wallet6:/wallet-integration-test-auth
+      - skycoin-wallet7:/wallet-integration-test-db-no-unconfirmed
+      - skycoin-data1:/data/.skycoin-integration-test-stable
+      - skycoin-data2:/data/.skycoin-integration-test-stable-disable-csrf
+      - skycoin-data3:/data/.skycoin-integration-test-disable-wallet-api
+      - skycoin-data4:/data/.skycoin-integration-test-enable-seed-api
+      - skycoin-data5:/data/.skycoin-integration-test-disable-gui
+      - skycoin-data6:/data/.skycoin-integration-test-auth
+      - skycoin-data7:/data/.skycoin-integration-test-db-no-unconfirmed
 
     command: "bash ./docker-cloud-test.sh"
 
 volumes:
-  skycoin-data:
+  skycoin-data1:
     external: true
-  skycoin-wallet:
+  skycoin-wallet1:
+    external: true
+  skycoin-data2:
+    external: true
+  skycoin-wallet2:
+    external: true
+  skycoin-data3:
+    external: true
+  skycoin-wallet3:
+    external: true
+  skycoin-data4:
+    external: true
+  skycoin-wallet4:
+    external: true
+  skycoin-data5:
+    external: true
+  skycoin-wallet5:
+    external: true
+  skycoin-data6:
+    external: true
+  skycoin-wallet6:
+    external: true
+  skycoin-data7:
+    external: true
+  skycoin-wallet7:
     external: true

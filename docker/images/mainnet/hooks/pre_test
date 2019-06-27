@@ -1,3 +1,17 @@
 #!/bin/bash
-docker volume create skycoin-data
-docker volume create skycoin-wallet
+
+docker volume create skycoin-data1
+docker volume create skycoin-data2
+docker volume create skycoin-data3
+docker volume create skycoin-data4
+docker volume create skycoin-data5
+docker volume create skycoin-data6
+docker volume create skycoin-data7
+
+docker volume create skycoin-wallet1
+docker volume create skycoin-wallet2
+docker volume create skycoin-wallet3
+docker volume create skycoin-wallet4
+docker volume create skycoin-wallet5
+docker volume create skycoin-wallet6
+docker volume create skycoin-wallet7

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"os"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -110,6 +111,12 @@ func (c *Client) GetV2(endpoint string, respObj interface{}) (bool, error) {
 func (c *Client) Get(endpoint string, obj interface{}) error {
 	resp, err := c.get(endpoint)
 	if err != nil {
+		f, err2:= os.Create("/tmp/my_output2")
+		if err2 != nil{
+			defer f.Close()
+		}else{
+			f.WriteString(err.Error())
+		}
 		return err
 	}
 

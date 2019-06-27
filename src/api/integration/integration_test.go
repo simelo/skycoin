@@ -3643,6 +3643,8 @@ func TestDisableWalletAPI(t *testing.T) {
 						err = c.PostForm(tc.endpoint, tc.body(), nil)
 					}
 				}
+				fmt.Print("integration error: -->")
+				fmt.Println(err.Error())
 				assertResponseError(t, err, tc.code, tc.expectErr)
 			}
 		}

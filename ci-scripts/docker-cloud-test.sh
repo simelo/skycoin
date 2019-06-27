@@ -1,10 +1,5 @@
 #!/bin/bash
-echo ----- /data/.skycoin -----
-ls -l /data/.skycoin
-echo --------------------------
-echo ----- /data/.skycoin/wallets -----
-ls -l /data/.skycoin/wallets
-echo ----------------------------------
+
 export PORT=6420
 cd ./..
 DIR=$PWD
@@ -31,6 +26,7 @@ for TEST in ${TESTS[@]} ; do
     FAIL=$?
     if [ $FAIL -ne 0 ]; then
         echo "----- FAIL TEST: $TEST -----"
+        cat /tmp/my_output
         exit 1
     fi
     echo "----- PASS TEST: $TEST -----"

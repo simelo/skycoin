@@ -10,8 +10,8 @@ curl http://integration-test-stable:6420/api/v1/version
 
 
  
-# 'integration-test-stable'
 TESTS=(
+    'integration-test-stable'
     'integration-test-stable-disable-csrf'
     'integration-test-disable-wallet-api'
     'integration-test-enable-seed-api'
@@ -26,7 +26,7 @@ for TEST in ${TESTS[@]} ; do
         rm /wallet
     fi
 
-    if [-d /data/.skycoin ]; then
+    if [ -d /data/.skycoin ]; then
         rm /data/.skycoin
     fi
     ln -s /data/.skycoin-$TEST /data/.skycoin

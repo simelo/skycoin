@@ -1,4 +1,10 @@
 #!/bin/bash
+echo ----- /data/.skycoin -----
+ls -l /data/.skycoin
+echo --------------------------
+echo ----- /data/.skycoin/wallets -----
+ls -l /data/.skycoin/wallets
+echo ----------------------------------
 export PORT=6420
 cd ./..
 DIR=$PWD

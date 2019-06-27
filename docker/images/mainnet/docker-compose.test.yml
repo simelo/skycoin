@@ -18,7 +18,7 @@ services:
       - ./../../../src/api/integration/testdata:/testdata
       - skycoin-wallet1:/wallet
       - skycoin-data1:/data/.skycoin
-    command: "-db-path /testdata/blockchain-180.db \
+    command: "-db-path=/testdata/blockchain-180.db \
               -disable-networking=true \
               -download-peerlist=false \
               -db-read-only=true \
@@ -37,7 +37,7 @@ services:
       - ./../../../src/api/integration/testdata:/testdata
       - skycoin-wallet2:/wallet
       - skycoin-data2:/data/.skycoin
-    command: "-db-path /testdata/blockchain-180.db \
+    command: "-db-path=/testdata/blockchain-180.db \
               -disable-networking=true \
               -download-peerlist=false \
               -db-read-only=true \
@@ -58,7 +58,7 @@ services:
       - skycoin-data3:/data/.skycoin
     command: "-disable-networking=true \
               -download-peerlist=false \
-              -db-path /testdata/blockchain-180.db \
+              -db-path=/testdata/blockchain-180.db \
               -db-read-only=true \
               -launch-browser=false \
               -enable-all-api-sets=true \
@@ -77,7 +77,7 @@ services:
       - skycoin-data4:/data/.skycoin
     command: "-disable-networking=true \
               -download-peerlist=false \
-              -db-path /testdata/blockchain-180.db \
+              -db-path=/testdata/blockchain-180.db \
               -db-read-only=true \
               -launch-browser=false \
               -enable-all-api-sets=true \
@@ -96,7 +96,7 @@ services:
       - skycoin-data5:/data/.skycoin
     command: "-disable-networking=true \
               -download-peerlist=false \
-              -db-path /testdata/blockchain-180.db \
+              -db-path=/testdata/blockchain-180.db \
               -db-read-only=true \
               -launch-browser=false \
               -enable-all-api-sets=true \
@@ -116,7 +116,7 @@ services:
       - skycoin-data6:/data/.skycoin
     command: "-disable-networking=true \
               -download-peerlist=false \
-              -db-path /testdata/blockchain-180.db \
+              -db-path=/testdata/blockchain-180.db \
               -db-read-only=true \
               -launch-browser=false \
               -web-interface-username=foobar\
@@ -136,7 +136,7 @@ services:
       - ./../../../src/api/integration/testdata:/testdata
       - skycoin-wallet7:/wallet
       - skycoin-data7:/data/.skycoin
-    command: "-db-path /testdata/blockchain-180.db \
+    command: "-db-path=/testdata/blockchain-180.db \
               -disable-networking=true \
               -download-peerlist=false \
               -db-read-only=true \

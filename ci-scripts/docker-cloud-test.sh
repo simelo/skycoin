@@ -11,14 +11,14 @@ curl http://integration-test-stable:6420/api/v1/version
 curl http://integration-test-disable-wallet-api:6420/api/v1/version
  
 
-# 'integration-test-disable-gui'
-# 'integration-test-auth'
 # 'integration-test-db-no-unconfirmed'
+# 'integration-test-auth'
 TESTS=(
     'integration-test-stable'
     'integration-test-stable-disable-csrf'
     'integration-test-disable-wallet-api'
     'integration-test-enable-seed-api'
+    'integration-test-disable-gui'
 )
 
 for TEST in ${TESTS[@]} ; do

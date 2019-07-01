@@ -6,7 +6,7 @@
 SCRIPT=`basename ${BASH_SOURCE[0]}`
 
 # Find unused port
-if [ -z "$PORT"]; then
+if [ -z "$PORT" ]; then
   # Find unused port
   PORT="1024"
   while $(lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null) ; do
@@ -14,7 +14,7 @@ if [ -z "$PORT"]; then
   done
 fi
 
-SKYCOIN_NODE = "${SKYCOIN_NODE:-"127.0.0.1"}"
+SKYCOIN_NODE="${SKYCOIN_NODE:-"127.0.0.1"}"
 COIN=${COIN:-skycoin}
 RPC_PORT="$PORT"
 HOST="http://$SKYCOIN_NODE:$PORT"
@@ -72,7 +72,7 @@ if [[ ! "$DATA_DIR" ]]; then
 fi
 
 
-if [ "$SKYCOIN_NODE" = "127.0.0.1"]; then
+if [ "$SKYCOIN_NODE" = "127.0.0.1" ]; then
   # Compile the skycoin node
   # We can't use "go run" because that creates two processes which doesn't allow us to kill it at the end
   echo "compiling $COIN with coverage"
@@ -126,7 +126,7 @@ CLI_FAIL=$?
 
 fi
 
-if [ "$SKYCOIN_NODE" = "127.0.0.1"]; then
+if [ "$SKYCOIN_NODE" = "127.0.0.1" ]; then
   echo "shutting down $COIN node"
   
   # Shutdown skycoin node

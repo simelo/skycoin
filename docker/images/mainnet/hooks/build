@@ -14,7 +14,7 @@
 
 cd ../../../
 
-if ["${CACHE_TAG#release-v}" != "$CACHE_TAG"] ; then
+if [ "${CACHE_TAG#release-v}" != "$CACHE_TAG" ] ; then
   export SOURCE_TAG="${CACHE_TAG#release-v}"
 fi
 

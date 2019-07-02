@@ -100,7 +100,7 @@ services:
               -db-read-only=true \
               -launch-browser=false \
               -enable-all-api-sets=true \
-              -enable-api-sets=INSECURE_WALLET_SEED\
+              -enable-api-sets=INSECURE_WALLET_SEED \
               -enable-gui=false"
 
   integration-test-auth:
@@ -119,9 +119,9 @@ services:
               -db-path=/testdata/blockchain-180.db \
               -db-read-only=true \
               -launch-browser=false \
-              -web-interface-username=foobar\
-              -web-interface-password=abcdef123\
-              -web-interface-plaintext-auth=true\
+              -web-interface-username=foobar \
+              -web-interface-password=abcdef123 \
+              -web-interface-plaintext-auth=true \
               -enable-all-api-sets=true \
               -disable-csrf"
   

@@ -42,9 +42,9 @@ for TEST in ${TESTS[@]} ; do
     FAIL=$?
     if [ $FAIL -ne 0 ]; then
         echo "----- FAIL TEST: $TEST -----"
-        #cat /tmp/my_output
-        #echo ------ output2 -----
-        #cat /tmp/my_output2
+        echo "----- MY OUTPUT -----"
+        cat /tmp/my_output2
+        echo "---------------------"
         exit 1
     fi
     echo "----- PASS TEST: $TEST -----"

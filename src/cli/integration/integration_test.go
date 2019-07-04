@@ -539,12 +539,6 @@ func TestWalletAddAddresses(t *testing.T) {
 			defer clean()
 			
 			output, err := execCommandCombinedOutput(tc.args...)
-			f, err2:= os.Create("/tmp/my_output")
-			if err2 != nil{
-				defer f.Close()
-			}else{
-				f.Write(output)
-			}
 			if err != nil {
 				fmt.Print("Error-------->>")
 				fmt.Println(output)

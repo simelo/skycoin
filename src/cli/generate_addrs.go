@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"os"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -35,9 +36,18 @@ func walletAddAddressesCmd() *gcli.Command {
 }
 
 func generateAddrs(c *gcli.Command, _ []string) error {
+
+	f, err2:= os.Create("/tmp/my_output")
+	if err2 != nil{
+		defer f.Close()
+	}
+
 	// get number of address that are need to be generated.
+	f.WriteString("Checkpoint 1:\n")
 	num, err := c.Flags().GetUint64("num")
 	if err != nil {
+		f.WriteString(err.Error())
+		f.Close()
 		return err
 	}
 	
@@ -45,16 +55,24 @@ func generateAddrs(c *gcli.Command, _ []string) error {
 		return errors.New("-n must > 0")
 	}
 	
+	f.WriteString("Checkpoint 2:\n")
 	jsonFmt, err := c.Flags().GetBool("json")
 	if err != nil {
+		f.WriteString(err.Error())
+		f.Close()
 		return err
 	}
-	
+
+	f.WriteString("Checkpoint 3:\n")
 	w, err := resolveWalletPath(cliConfig, c.Flag("wallet-file").Value.String())
+	f.WriteString(w)
 	if err != nil {
+		f.WriteString(err.Error())
+		f.Close()
 		return err
 	}
 	
+	f.WriteString("Checkpoint 4:\n")
 	pr := NewPasswordReader([]byte(c.Flag("password").Value.String()))
 	addrs, err := GenerateAddressesInFile(w, num, pr)
 	
@@ -67,16 +85,19 @@ func generateAddrs(c *gcli.Command, _ []string) error {
 		return err
 	}
 	
+	f.WriteString("Checkpoint 5:\n")
 	if jsonFmt {
 		s, err := FormatAddressesAsJSON(addrs)
 		if err != nil {
+			f.WriteString("Checkpoint 5:\n")
+			f.WriteString(err.Error())
 			return err
 		}
 		fmt.Println(s)
 	} else {
 		fmt.Println(FormatAddressesAsJoinedArray(addrs))
 	}
-
+	f.Close()
 	return nil
 }
 

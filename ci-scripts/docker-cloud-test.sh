@@ -43,7 +43,7 @@ for TEST in ${TESTS[@]} ; do
     if [ $FAIL -ne 0 ]; then
         echo "----- FAIL TEST: $TEST -----"
         echo "----- MY OUTPUT -----"
-        cat /tmp/my_output2
+        cat /tmp/my_output
         echo "---------------------"
         exit 1
     fi

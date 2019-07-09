@@ -83,7 +83,11 @@ echo "checking if integration tests compile"
 go test ./src/api/integration/...
 go test ./src/cli/integration/...
 
-DATA_DIR=$(mktemp -d -t ${COIN}-data-dir.XXXXXX)
+DATA_DIR="/data/.skycoin"
+if [ "$SKYCOIN_NODE" = "127.0.0.1" ]; then
+  DATA_DIR=$(mktemp -d -t ${COIN}-data-dir.XXXXXX)
+fi
+
 WALLET_DIR="/wallet"
 
 if [ "$SKYCOIN_NODE" = "127.0.0.1" ]; then

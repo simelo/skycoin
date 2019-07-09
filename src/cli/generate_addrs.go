@@ -75,13 +75,16 @@ func generateAddrs(c *gcli.Command, _ []string) error {
 	f.WriteString("Checkpoint 4:\n")
 	pr := NewPasswordReader([]byte(c.Flag("password").Value.String()))
 	addrs, err := GenerateAddressesInFile(w, num, pr)
-	
+	f.WriteString(err.Error())
 	switch err.(type) {
 	case nil:
+		f.WriteString("1")
 	case WalletLoadError:
+		f.WriteString("2")
 		printHelp(c)
 		return err
 	default:
+		f.WriteString("3")
 		return err
 	}
 	

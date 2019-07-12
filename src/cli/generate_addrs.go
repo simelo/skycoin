@@ -63,6 +63,11 @@ func generateAddrs(c *gcli.Command, _ []string) error {
 		return err
 	}
 
+	f.WriteString(cliConfig.FullWalletPath())
+	f.WriteString("\n")
+	f.WriteString(cliConfig.WalletDir)
+	f.WriteString("\n")
+
 	f.WriteString("Checkpoint 3:\n")
 	w, err := resolveWalletPath(cliConfig, c.Flag("wallet-file").Value.String())
 	f.WriteString(w)

@@ -92,7 +92,7 @@ func generateAddrs(c *gcli.Command, _ []string) error {
 	case nil:
 		f.WriteString("1\n")
 	case WalletLoadError:
-		f.WriteString("2\n")
+		f.WriteString("Error number 2\n")
 		printHelp(c)
 		return err
 	default:

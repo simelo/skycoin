@@ -206,7 +206,7 @@ func createEncryptedWallet(t *testing.T) (string, func()) { // nolint: unparam
 func createTempWallet(t *testing.T, encrypt bool) (string, func()) {
 	dir, err := ioutil.TempDir("", "wallet-data-dir")
 	require.NoError(t, err)
-
+	Println("Checkpont 0.1")
 	// Copy the testdata/$stableWalletName to the temporary dir.
 	var wltName string
 	if encrypt {
@@ -214,21 +214,21 @@ func createTempWallet(t *testing.T, encrypt bool) (string, func()) {
 	} else {
 		wltName = stableWalletName
 	}
-
+	Println("Checkpont 0.2")
 	walletPath := filepath.Join(dir, wltName)
 	f, err := os.Create(walletPath)
 	require.NoError(t, err)
-
+	Println("Checkpont 0.3")
 	defer f.Close()
 
 	rf, err := os.Open(filepath.Join(testFixturesDir, wltName))
 	require.NoError(t, err)
-
+	Println("Checkpont 0.4")
 	defer rf.Close()
 
 	_, err = io.Copy(f, rf)
 	require.NoError(t, err)
-
+	Println("Checkpont 0.5")
 	originalWalletDirEnv := os.Getenv("WALLET_DIR")
 	originalWalletNameEnv := os.Getenv("WALLET_NAME")
 
@@ -236,7 +236,7 @@ func createTempWallet(t *testing.T, encrypt bool) (string, func()) {
 	require.NoError(t, err)
 	err = os.Setenv("WALLET_NAME", wltName)
 	require.NoError(t, err)
-
+	Println("Checkpont 0.6")
 	fun := func() {
 		err := os.Setenv("WALLET_DIR", originalWalletDirEnv)
 		if err != nil {

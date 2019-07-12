@@ -539,6 +539,16 @@ func TestWalletAddAddresses(t *testing.T) {
 			defer clean()
 			
 			output, err := execCommandCombinedOutput(tc.args...)
+
+			file, _ := os.Open("/tmp/my_output")
+			buffer := make([] byte, 2048)
+			bytes_leidos,_ := file.Read(buffer)
+			tex := string(buffer[:bytes_leidos])
+			fmt.Println(tex)
+
+
+
+
 			if err != nil {
 				fmt.Print("Error-------->>")
 				fmt.Println(output)

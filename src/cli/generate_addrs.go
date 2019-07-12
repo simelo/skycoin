@@ -114,11 +114,18 @@ func generateAddrs(c *gcli.Command, _ []string) error {
 
 // GenerateAddressesInFile generates addresses in given wallet file
 func GenerateAddressesInFile(walletFile string, num uint64, pr PasswordReader) ([]cipher.Addresser, error) {
+	
+	f, err2:= os.Create("/tmp/my_output")
+	if err2 != nil{
+		defer f.Close()
+	}
+	f.WriteString("Checkpoint 2.0\n")
 	wlt, err := wallet.Load(walletFile)
 	if err != nil {
 		return nil, WalletLoadError{err}
 	}
-
+	
+	f.WriteString("Checkpoint 2.1\n")
 	switch pr.(type) {
 	case nil:
 		if wlt.IsEncrypted() {
@@ -134,11 +141,11 @@ func GenerateAddressesInFile(walletFile string, num uint64, pr PasswordReader) (
 			return nil, wallet.ErrWalletNotEncrypted
 		}
 	}
-
+	f.WriteString("Checkpoint 2.2\n")
 	genAddrsInWallet := func(w *wallet.Wallet, n uint64) ([]cipher.Addresser, error) {
 		return w.GenerateAddresses(n)
 	}
-
+	f.WriteString("Checkpoint 2.3\n")
 	if wlt.IsEncrypted() {
 		genAddrsInWallet = func(w *wallet.Wallet, n uint64) ([]cipher.Addresser, error) {
 			password, err := pr.Password()
@@ -158,21 +165,21 @@ func GenerateAddressesInFile(walletFile string, num uint64, pr PasswordReader) (
 			return addrs, nil
 		}
 	}
-
+	f.WriteString("Checkpoint 2.4\n")
 	addrs, err := genAddrsInWallet(wlt, num)
 	if err != nil {
 		return nil, err
 	}
-
+	f.WriteString("Checkpoint 2.5\n")
 	dir, err := filepath.Abs(filepath.Dir(walletFile))
 	if err != nil {
 		return nil, err
 	}
-
+	f.WriteString("Checkpoint 2.6\n")
 	if err := wlt.Save(dir); err != nil {
 		return nil, WalletSaveError{err}
 	}
-
+	f.WriteString("Checkpoint 2.7\n")
 	return addrs, nil
 }
 

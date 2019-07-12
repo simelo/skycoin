@@ -223,10 +223,10 @@ func createTempWallet(t *testing.T, encrypt bool) (string, func()) {
 
 	rf, err := os.Open(filepath.Join(testFixturesDir, wltName))
 	
-	buffer := make([] byte, 2048)
-	bytes_leidos,_ := rf.Read(buffer)
-	tex := string(buffer[:bytes_leidos])
-	fmt.Println(tex)
+	//buffer := make([] byte, 2048)
+	//bytes_leidos,_ := rf.Read(buffer)
+	//tex := string(buffer[:bytes_leidos])
+	//fmt.Println(tex)
 
 
 	require.NoError(t, err)

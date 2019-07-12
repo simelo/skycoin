@@ -86,7 +86,7 @@ func generateAddrs(c *gcli.Command, _ []string) error {
 	
 
 	f.WriteString("\nasdfe\n")
-	f.WriteString(err.Error())
+	//f.WriteString(err.Error())
 	f.WriteString("\n")
 	switch err.(type) {
 	case nil:

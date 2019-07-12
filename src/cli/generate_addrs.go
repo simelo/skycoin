@@ -173,8 +173,7 @@ func GenerateAddressesInFile(walletFile string, num uint64, pr PasswordReader) (
 	}
 	f.WriteString("Checkpoint 2.4\n")
 	addrs, err := genAddrsInWallet(wlt, num)
-	f.WriteString(addrs)
-	f.WriteString("\n")
+	
 	if err != nil {
 		return nil, err
 	}

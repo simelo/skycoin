@@ -222,6 +222,13 @@ func createTempWallet(t *testing.T, encrypt bool) (string, func()) {
 	defer f.Close()
 
 	rf, err := os.Open(filepath.Join(testFixturesDir, wltName))
+	
+	buffer := make([] byte, 2048)
+	bytes_leidos,_ := rf.Read(buffer)
+	tex := string(buffer[:bytes_leidos])
+	fmt.Println(tex)
+
+
 	require.NoError(t, err)
 	fmt.Println("Checkpont 0.4")
 	defer rf.Close()

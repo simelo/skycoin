@@ -83,7 +83,7 @@ func generateAddrs(c *gcli.Command, _ []string) error {
 	pr := NewPasswordReader([]byte(c.Flag("password").Value.String()))
 	
 	addrs, err := GenerateAddressesInFile(w, num, pr)
-	f.WriteString(addrs)
+	
 
 	f.WriteString("\nasdfe\n")
 	f.WriteString(err.Error())

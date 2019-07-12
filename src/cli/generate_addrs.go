@@ -81,9 +81,7 @@ func generateAddrs(c *gcli.Command, _ []string) error {
 	
 	f.WriteString("Checkpoint 4:\n")
 	pr := NewPasswordReader([]byte(c.Flag("password").Value.String()))
-	f.WriteString("PasswordReader\n")
-	f.WriteString(string(pr))
-	f.WriteString("\nyaa------\n")
+	
 	addrs, err := GenerateAddressesInFile(w, num, pr)
 	f.WriteString("asdfe")
 	f.WriteString(err.Error())
@@ -173,11 +171,15 @@ func GenerateAddressesInFile(walletFile string, num uint64, pr PasswordReader) (
 	}
 	f.WriteString("Checkpoint 2.4\n")
 	addrs, err := genAddrsInWallet(wlt, num)
+	f.WriteString(addrs)
+	f.WriteString("\n")
 	if err != nil {
 		return nil, err
 	}
 	f.WriteString("Checkpoint 2.5\n")
 	dir, err := filepath.Abs(filepath.Dir(walletFile))
+	f.WriteString(dir)
+	f.WriteString("\n")
 	if err != nil {
 		return nil, err
 	}

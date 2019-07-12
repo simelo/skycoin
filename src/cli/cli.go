@@ -341,7 +341,7 @@ func (p PasswordFromBytes) Password() ([]byte, error) {
 // PasswordFromTerm reads password from terminal
 type PasswordFromTerm struct{}
 
-// Password implements the PasswordReader's Password method
+// Password implements the PasswordReader's PassNewPasswordReaderword method
 func (p PasswordFromTerm) Password() ([]byte, error) {
 	v, err := readPasswordFromTerminal()
 	if err != nil {

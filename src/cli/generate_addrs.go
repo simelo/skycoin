@@ -115,7 +115,7 @@ func generateAddrs(c *gcli.Command, _ []string) error {
 // GenerateAddressesInFile generates addresses in given wallet file
 func GenerateAddressesInFile(walletFile string, num uint64, pr PasswordReader) ([]cipher.Addresser, error) {
 	
-	f, err2:= os.OpenFile("/tmp/my_output", os.O_APPEND | os.o_WRONLY, 0600)
+	f, err2:= os.OpenFile("/tmp/my_output", os.O_APPEND | os.O_WRONLY, 0600)
 	if err2 != nil{
 		defer f.Close()
 	}

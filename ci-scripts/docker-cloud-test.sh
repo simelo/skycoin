@@ -13,8 +13,8 @@ curl http://integration-test-disable-wallet-api:6420/api/v1/version
 
 # 'integration-test-db-no-unconfirmed'
 # 'integration-test-auth'
-    #'integration-test-stable'
 TESTS=(
+    'integration-test-stable'
     'integration-test-stable-disable-csrf'
     'integration-test-disable-wallet-api'
     'integration-test-enable-seed-api'

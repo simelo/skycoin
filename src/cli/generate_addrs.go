@@ -154,11 +154,13 @@ func GenerateAddressesInFile(walletFile string, num uint64, pr PasswordReader) (
 	f.WriteString("Checkpoint 2.3\n")
 	if wlt.IsEncrypted() {
 		genAddrsInWallet = func(w *wallet.Wallet, n uint64) ([]cipher.Addresser, error) {
+			f.WriteString("Checkpoint 3.0\n")
 			password, err := pr.Password()
 			if err != nil {
 				return nil, err
+				
 			}
-
+			f.WriteString("Checkpoint 3.1\n")
 			var addrs []cipher.Addresser
 			if err := w.GuardUpdate(password, func(wlt *wallet.Wallet) error {
 				var err error
@@ -167,7 +169,7 @@ func GenerateAddressesInFile(walletFile string, num uint64, pr PasswordReader) (
 			}); err != nil {
 				return nil, err
 			}
-
+			f.WriteString("Checkpoint 3.2\n")
 			return addrs, nil
 		}
 	}

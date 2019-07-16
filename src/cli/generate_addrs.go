@@ -166,12 +166,10 @@ func GenerateAddressesInFile(walletFile string, num uint64, pr PasswordReader) (
 			if err := w.GuardUpdate(password, func(wlt *wallet.Wallet) error {
 				var err error
 				addrs, err = wlt.GenerateAddresses(n)
-				f.WriteString(err.Error())
-				f.WriteString("----------------------------\n")
+				
 				return err
 			}); err != nil {
-				f.WriteString(err.Error())
-				f.WriteString("----------------------------\n")
+				
 				return nil, err
 			}
 			f.WriteString("Checkpoint 3.2\n")
